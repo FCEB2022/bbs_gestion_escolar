@@ -54,7 +54,7 @@ Abre: https://dashboard.render.com
 | **Region** | `Frankfurt (EU)` |
 | **Branch** | `main` |
 | **Build Command** | `pip install -r requirements.txt` |
-| **Start Command** | `gunicorn wsgi:app --timeout 60` |
+| **Start Command** | `gunicorn wsgi:app --bind 0.0.0.0:$PORT --timeout 60` |
 | **Plan** | `Free` |
 
 ### 4️⃣ Variables de Entorno (30 segundos)
@@ -68,14 +68,16 @@ FLASK_ENV = production
 SECRET_KEY = 75f1b2bb548023b83e7102905dca630a35246dba33f8ca59bbc336aa6f2dfa66
 PYTHONUNBUFFERED = True
 DATABASE_URL = [PEGA_LA_URL_QUE_COPIASTE_EN_PASO_2]
-PORT = 5000
+FLASK_APP = run.py
 ```
 
-### 5️⃣ Disco para Uploads (30 segundos)
+*Nota: NO necesitas agregar `PORT = 5000`. Render lo asigna automáticamente y tu `Start Command` lo usa con `$PORT`.*
 
-Scroll a **"Disk"**
+### 5️⃣ Disco para Uploads (opcional)
 
-Click **"Add Disk"**
+- Nota: en la pantalla de creación el control de `Disk` no siempre aparece. Si no ves la opción aquí, no te preocupes: puedes añadir un disco persistente después de crear el servicio (si tu cuenta/plan/region lo soporta).
+
+- Para añadirlo después: abre el servicio → `Settings` → `Disks` (o `Add Disk`) y rellena:
 
 ```
 Name: uploads
@@ -83,15 +85,30 @@ Size: 1 GB
 Mount Path: /var/data/uploads
 ```
 
-### 6️⃣ Pre-Deploy Command (Opcional, 15 segundos)
+- Si Render no permite disco en tu cuenta, usa S3 (recomendado) o guarda archivos en otra solución externa. Si quieres, puedo implementar S3 en la app.
 
-Si ves campo **"Pre-deploy command"**, pega:
+### 6️⃣ Pre-Deploy Command (recomendado)
 
+Has expandido `Advanced` y ahí aparece el campo **Pre-Deploy Command** (exactamente como en tu captura). Este campo es ideal para ejecutar migraciones y tareas previas al arranque.
+
+Pega esto en **Pre-Deploy Command**:
+
+```bash
+export FLASK_APP=run.py && flask db upgrade && flask seed-datos-iniciales
 ```
-flask db upgrade && flask seed-datos-iniciales
+
+Explicación: Render ejecuta este comando antes del `Start Command`; así las migraciones y seeds corren solo una vez por despliegue.
+
+Si por alguna razón prefieres no usar Pre-Deploy (o no aparece), usa este **Start Command** como fallback (ejecuta migraciones justo antes de arrancar):
+
+```bash
+bash -lc "export FLASK_APP=run.py && flask db upgrade && flask seed-datos-iniciales && exec gunicorn wsgi:app --timeout 60"
 ```
 
-(Esto ejecuta migraciones automáticamente)
+Recomendaciones rápidas:
+- Asegúrate de tener la variable de entorno `FLASK_APP=run.py` en `Environment`.
+- Mantén `Start Command` como `gunicorn wsgi:app --timeout 60` si usas `Pre-Deploy Command`.
+- Revisa `Live Logs` para ver el resultado de las migraciones y el arranque de Gunicorn.
 
 ### 7️⃣ ¡CREAR!
 
