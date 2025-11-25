@@ -1,0 +1,43 @@
+services:
+  # Servicio web principal
+  - type: web
+    name: bbs-gestion-escolar
+    runtime: python310
+    region: frankfurt  # o la región que prefieras: frankfurt, oregon, ohio, etc
+    plan: free  # Plan gratuito
+    
+    # Comando para iniciar la aplicación
+    startCommand: "gunicorn wsgi:app --timeout 60"
+    
+    # Variables de entorno
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true  # Genera una clave aleatoria
+      - key: UPLOAD_FOLDER
+        value: /var/data/uploads
+    
+    # Volumen para archivos persistentes (uploads)
+    disk:
+      - name: uploads
+        mountPath: /var/data/uploads
+        sizeGB: 1  # 1GB gratuito
+    
+    # Pre-deployment: ejecutar migraciones
+    preDeployCommand: "flask db upgrade && flask seed-datos-iniciales"
+    
+    # Rutas de salud
+    healthCheckPath: /
+    
+    # Logs
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "True"
+
+  # Base de datos PostgreSQL (gratuita)
+  - type: pgsql
+    name: bbs-gestion-escolar-db
+    plan: free
+    region: frankfurt  # Misma región que el web service
+    initialDatabase: bbs_db

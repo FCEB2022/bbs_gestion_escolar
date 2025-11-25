@@ -5,9 +5,11 @@ from .usuarios.models import Usuario, Role  # modelos del módulo usuarios
 from .models_shared import ActividadUsuario  # modelo compartido de actividad
 
 
-def create_app():
+def create_app(config_class=None):
+    if config_class is None:
+        config_class = Config
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_object(Config)
+    app.config.from_object(config_class)
 
     # Extensiones
     db.init_app(app)
