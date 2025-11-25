@@ -10,23 +10,21 @@
 
 ---
 
-## 🚀 Próximos Pasos (¡MUY FÁCIL!)
+## 🚀 Próximos Pasos (¡ULTRA RÁPIDO!)
 
-### Opción A: Despliegue Rápido (5 minutos)
+### ⭐ LA MÁS RÁPIDA - 3 MINUTOS
 
-Lee: **`QUICK_DEPLOY.md`** en el repositorio
+Lee: **`RENDER_QUICK_SETUP.md`** ← **COMIENZA AQUÍ**
 
-Pasos básicos:
-1. Ve a https://render.com
-2. "Sign up with GitHub"
-3. Conecta tu repositorio
-4. Copia 3 valores (Build command, Start command, Region)
-5. Crea la base de datos PostgreSQL
-6. ¡Listo! En 10 minutos tendrás tu URL
+- ✅ Todas las credenciales listas para copiar-pegar
+- ✅ Instrucciones paso a paso con valores pre-rellenados
+- ✅ 3 minutos de trabajo + 10 de espera automática = URL en vivo
 
-### Opción B: Despliegue Detallado
+### Alternativas
 
-Lee: **`RENDER_DEPLOYMENT.md`** para instrucciones paso a paso
+- **`RENDER_MANUAL_DEPLOY.md`** - Versión detallada con imágenes
+- **`RENDER_DEPLOYMENT.md`** - Guía completa con todas las opciones
+- **`QUICK_DEPLOY.md`** - Deploy en 5 minutos (requiere CLI)
 
 ---
 
