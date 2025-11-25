@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{% if reset %}Restablecer Contraseña{% else %}Recuperar Contraseña{% endif %}{% endblock %}
+{% block content %}
+<div class="col-md-6 mx-auto">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h4 class="text-success fw-bold mb-3">
+        <i class="fas fa-key me-2"></i>{% if reset %}Restablecer Contraseña{% else %}Recuperar Contraseña{% endif %}
+      </h4>
+      <form method="post">
+        {{ form.hidden_tag() }}
+        {% if reset %}
+          {{ form.password.label(class="form-label") }}
+          {{ form.password(class="form-control mb-3") }}
+          {% for e in form.password.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        {% else %}
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control mb-3") }}
+          {% for e in form.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+        {% endif %}
+        {{ form.submit(class="btn btn-success") }}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary ms-2">Volver</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Programación del Curso — BBS{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+
+  <!-- Encabezado -->
+  <div class="card shadow-lg border-0 mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #198754; color: white;">
+      <h4 class="mb-0" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.2);">
+        <i class="fas fa-calendar-alt me-2"></i> Programación del Curso
+      </h4>
+      <a href="{{ url_for('cursos.detalle', curso_id=curso.id) }}" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Volver al curso
+      </a>
+    </div>
+
+    <div class="card-body">
+      <h5 class="fw-bold text-success mb-2 text-uppercase">{{ curso.nombre }}</h5>
+      <p><strong>Tipo:</strong> {{ curso.tipo }}</p>
+
+      {% if curso.tipo == "INTENSIVO" %}
+        <p><strong>Duración:</strong> {{ prog.fecha_inicio.strftime('%d/%m/%Y') }} – {{ prog.fecha_fin.strftime('%d/%m/%Y') }}</p>
+      {% else %}
+        <p><strong>Años escolares:</strong> {{ prog.anio_escolar_inicio }} — {{ prog.anio_escolar_fin }}</p>
+      {% endif %}
+
+      <p><strong>Estado de programación:</strong>
+        <span class="badge {% if prog.estado_programacion == 'PENDIENTE' %} bg-warning {% elif prog.estado_programacion == 'VALIDADA' %} bg-success {% else %} bg-secondary {% endif %}">
+          {{ prog.estado_programacion }}
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Selector de vista -->
+  <div class="text-center mb-4">
+    <div class="btn-group" role="group">
+      <button id="btn-calendario" class="btn btn-outline-success active">
+        <i class="fas fa-th me-1"></i> Ver como calendario
+      </button>
+      <button id="btn-timeline" class="btn btn-outline-success">
+        <i class="fas fa-stream me-1"></i> Ver como línea temporal
+      </button>
+    </div>
+  </div>
+
+  <!-- Calendario mensual -->
+  <div id="vista-calendario" class="card shadow-sm border-0">
+    <div class="card-header bg-light">
+      <h5 class="mb-0 text-success"><i class="fas fa-calendar-week me-2"></i>Calendario de Semanas</h5>
+    </div>
+    <div class="card-body">
+      {% if semanas_por_mes %}
+        <div class="calendar-grid">
+          {% for mes, semanas in semanas_por_mes.items() %}
+            <div class="month-block shadow-sm">
+              <h6 class="month-title"><i class="fas fa-calendar me-2"></i>{{ mes }}</h6>
+              <div class="weeks-grid">
+                {% for inicio, fin in semanas %}
+                  <div class="week-card" data-bs-toggle="tooltip"
+                       title="Semana {{ loop.index }}: {{ inicio.strftime('%d/%m') }} - {{ fin.strftime('%d/%m') }}">
+                    <span class="week-label">S{{ loop.index }}</span>
+                    <small>{{ inicio.strftime('%d/%m') }}</small>
+                    <small>{{ fin.strftime('%d/%m') }}</small>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted fst-italic">No hay información disponible del calendario.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div id="vista-timeline" class="card shadow-sm border-0 d-none">
+    <div class="card-header bg-light">
+      <h5 class="mb-0 text-primary"><i class="fas fa-stream me-2"></i>Línea Temporal</h5>
+    </div>
+    <div class="card-body">
+      {% if semanas_por_mes %}
+        <div class="timeline-container">
+          {% for mes, semanas in semanas_por_mes.items() %}
+            <div class="timeline-month">
+              <div class="month-title text-primary fw-bold">
+                <i class="fas fa-calendar me-2"></i>{{ mes }}
+              </div>
+
+              <div class="timeline">
+                {% for inicio, fin in semanas %}
+                  {% set color_class = 'pending' %}
+                  {% if prog.estado_programacion == 'VALIDADA' %}
+                    {% set color_class = 'validated' %}
+                  {% elif prog.estado_programacion == 'PROGRAMADO' %}
+                    {% set color_class = 'done' %}
+                  {% endif %}
+
+                  <div class="timeline-item" data-bs-toggle="tooltip"
+                       title="Semana {{ loop.index }}: {{ inicio.strftime('%d/%m') }} - {{ fin.strftime('%d/%m') }}">
+                    <div class="timeline-dot {{ color_class }}"></div>
+                    <div class="timeline-content">
+                      <strong>Semana {{ loop.index }}</strong><br>
+                      <small>{{ inicio.strftime('%d/%m') }} – {{ fin.strftime('%d/%m') }}</small>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted fst-italic">No hay información disponible del calendario.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Validar programación -->
+  {% if current_user.roles | selectattr('nombre', 'equalto', 'Administrador') | list | length > 0 and prog.estado_programacion == 'PENDIENTE' %}
+    <form method="POST" action="{{ url_for('cursos.programacion_validar', curso_id=curso.id) }}" onsubmit="return confirm('¿Deseas validar la programación del curso?')">
+      {{ form.hidden_tag() if form is defined else '' }}
+      <div class="text-end mt-4">
+        <button type="submit" class="btn btn-success px-4">
+          <i class="fas fa-check-double me-1"></i> Validar programación
+        </button>
+      </div>
+    </form>
+  {% endif %}
+</div>
+
+<!-- ===== ESTILOS ===== -->
+<style>
+  .calendar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .month-block { background: #f8f9fa; border-radius: 10px; padding: 1rem; border: 1px solid #dee2e6; transition: 0.2s; }
+  .month-block:hover { transform: scale(1.02); }
+  .month-title { color: #198754; font-weight: 600; border-bottom: 1px solid #cce3d3; padding-bottom: .5rem; margin-bottom: 1rem; }
+  .weeks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: .8rem; }
+  .week-card { background: linear-gradient(135deg, #e9f7ef, #d1f0dc); border-radius: 8px; padding: .5rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.1); transition: all .2s; }
+  .week-card:hover { background: linear-gradient(135deg, #c8eed3, #a8e0bb); transform: translateY(-2px); }
+
+  .timeline-container { display: flex; flex-direction: column; gap: 3rem; }
+  .timeline-month { padding: 1rem; background: #f8f9fa; border-radius: 10px; border: 1px solid #dee2e6; }
+  .timeline { display: flex; flex-wrap: wrap; gap: 2rem 1rem; margin-top: 1.5rem; }
+  .timeline-item { display: flex; flex-direction: column; align-items: center; flex: 0 0 100px; }
+  .timeline-dot { width: 18px; height: 18px; border-radius: 50%; background: #ccc; margin-bottom: 0.5rem; box-shadow: 0 0 0 4px #fff, 0 0 5px rgba(0,0,0,.15); transition: all 0.3s; }
+  .timeline-dot.pending { background: #ffc107; }
+  .timeline-dot.validated { background: #28a745; }
+  .timeline-dot.done { background: #0d6efd; }
+  .timeline-dot:hover { transform: scale(1.2); }
+  .timeline-content { text-align: center; font-size: 0.85rem; }
+
+  @media (max-width: 768px) {
+    .timeline { flex-direction: column; gap: 1rem; }
+    .timeline-item { flex-direction: row; align-items: center; gap: 0.5rem; }
+    .timeline-content { text-align: left; }
+  }
+</style>
+
+<!-- ===== JS ===== -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(el => new bootstrap.Tooltip(el))
+
+    const btnCal = document.getElementById('btn-calendario')
+    const btnTl = document.getElementById('btn-timeline')
+    const cal = document.getElementById('vista-calendario')
+    const tl = document.getElementById('vista-timeline')
+
+    btnCal.addEventListener('click', () => {
+      btnCal.classList.add('active')
+      btnTl.classList.remove('active')
+      cal.classList.remove('d-none')
+      tl.classList.add('d-none')
+    })
+    btnTl.addEventListener('click', () => {
+      btnTl.classList.add('active')
+      btnCal.classList.remove('active')
+      tl.classList.remove('d-none')
+      cal.classList.add('d-none')
+    })
+  })
+</script>
+{% endblock %}

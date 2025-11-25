@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Estadísticas de Documentos{% endblock %}
+{% block content %}
+<div class="container-fluid py-4">
+  <div class="dashboard-header text-center mb-4">
+    <h1 class="fw-bold text-success"><i class="fas fa-chart-bar me-2"></i>Estadísticas de Documentos</h1>
+    <p class="text-muted">Indicadores rápidos</p>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h3>{{ total_entradas }}</h3>
+          <p class="text-muted">Entradas</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h3>{{ total_salidas }}</h3>
+          <p class="text-muted">Salidas</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

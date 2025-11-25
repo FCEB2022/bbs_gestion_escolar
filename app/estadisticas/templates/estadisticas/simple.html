@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Estadísticas — BBS{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-primary"><i class="fas fa-chart-line me-2"></i>Dashboard de Estadísticas</h1>
+        <div class="text-muted">
+            <small>Actualizado: {{ hoy.strftime('%d/%m/%Y %H:%M') }}</small>
+        </div>
+    </div>
+
+    <!-- Tarjetas Básicas -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Estudiantes</h5>
+                    <h2 class="card-text">{{ total_estudiantes }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Estudiantes Bata</h5>
+                    <h2 class="card-text">{{ estudiantes_bata }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Estudiantes Malabo</h5>
+                    <h2 class="card-text">{{ estudiantes_malabo }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Cursos Activos</h5>
+                    <h2 class="card-text">{{ cursos_activos }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información adicional simple -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">Estado de Matrículas</h6>
+                </div>
+                <div class="card-body">
+                    <p>Validadas: <strong>{{ total_estudiantes }}</strong></p>
+                    <p>Pendientes: <strong>{{ matriculas_pendientes }}</strong></p>
+                    <p>Rechazadas: <strong>{{ matriculas_rechazadas }}</strong></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0">Estado de Pagos</h6>
+                </div>
+                <div class="card-body">
+                    <p>Validados: <strong>{{ pagos_validados }}</strong></p>
+                    <p>Pendientes: <strong>{{ pagos_pendientes }}</strong></p>
+                    <p>Rechazados: <strong>{{ pagos_rechazados }}</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

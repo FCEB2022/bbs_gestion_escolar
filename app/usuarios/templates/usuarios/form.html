@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ accion }} Usuario{% endblock %}
+{% block content %}
+<h3 class="fw-bold text-success"><i class="fas fa-user me-2"></i>{{ accion }} Usuario</h3>
+<form method="post" novalidate>
+  {{ form.hidden_tag() }}
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      {{ form.username.label(class="form-label") }}
+      {{ form.username(class="form-control") }}
+      {% for e in form.username.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="col-md-6 mb-3">
+      {{ form.email.label(class="form-label") }}
+      {{ form.email(class="form-control") }}
+      {% for e in form.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      {{ form.nombre_completo.label(class="form-label") }}
+      {{ form.nombre_completo(class="form-control") }}
+    </div>
+    <div class="col-md-6 mb-3">
+      {{ form.password.label(class="form-label") }}
+      {{ form.password(class="form-control") }}
+      <div class="form-text">Opcional en edición. Reglas: 8+ caracteres, mayúscula, minúscula, número y símbolo.</div>
+      {% for e in form.password.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+    </div>
+  </div>
+
+  <div class="mb-3">
+    {{ form.roles.label(class="form-label") }}
+    {{ form.roles(class="form-select", size=4) }}
+  </div>
+
+  <div class="form-check mb-3">
+    {{ form.activo(class="form-check-input", id="activoCheck") }}
+    <label for="activoCheck" class="form-check-label">Activo</label>
+  </div>
+
+  <button class="btn btn-success">{{ form.submit.label }}</button>
+  <a href="{{ url_for('usuarios.index') }}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

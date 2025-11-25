@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Pagos Pendientes de Validación{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0"><i class="fas fa-clock me-2"></i>Pagos Pendientes de Validación</h4>
+        </div>
+        <div class="card-body">
+            {% if pagos %}
+            <div class="table-responsive">
+                <table class="table table-striped align-middle">
+                    <thead class="table-warning">
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Curso</th>
+                            <th>Cuota</th>
+                            <th>Monto</th>
+                            <th>Factura</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pago in pagos %}
+                        <tr>
+                            <td>{{ pago.matricula.estudiante_nombre }}</td>
+                            <td>{{ pago.matricula.curso.nombre }}</td>
+                            <td>{{ pago.numero_cuota }}</td>
+                            <td>{{ "%.0f"|format(pago.monto) }} XAF</td>
+                            <td>
+                                {% if pago.factura_path %}
+                                    <a href="{{ url_for('pagos.ver_factura', pago_id=pago.id) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('pagos.validar', pago_id=pago.id) }}" class="btn btn-sm btn-success">
+                                    <i class="fas fa-check"></i> Validar
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-check-circle fa-3x mb-3"></i>
+                <h5>No hay pagos pendientes de validación</h5>
+                <p>Todos los pagos han sido procesados.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

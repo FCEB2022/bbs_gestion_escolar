@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Nuevo Registro{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="module-header">
+    <h1>
+      <i class="fas fa-{% if tipo == 'entrada' %}file-import{% else %}file-export{% endif %} me-2"></i>
+      Nuevo Registro de {{ 'Entrada' if tipo == 'entrada' else 'Salida' }}
+    </h1>
+    <p class="lead">Complete la información del documento</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link {% if tipo == 'entrada' %}active{% endif %}" href="{{ url_for('documentos.nuevo', tipo='entrada') }}">
+            <i class="fas fa-file-import me-2"></i>Entrada
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if tipo == 'salida' %}active{% endif %}" href="{{ url_for('documentos.nuevo', tipo='salida') }}">
+            <i class="fas fa-file-export me-2"></i>Salida
+          </a>
+        </li>
+      </ul>
+    </div>
+    <div class="card-body">
+      <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              {{ form.numero_referencia.label(class="form-label") }}
+              {{ form.numero_referencia(class="form-control", readonly=true) }}
+              {% for error in form.numero_referencia.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              {% if tipo == 'entrada' %}
+                {{ form.fecha_recepcion.label(class="form-label") }}
+                {{ form.fecha_recepcion(class="form-control", type="date") }}
+                {% for error in form.fecha_recepcion.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+              {% else %}
+                {{ form.fecha_despacho.label(class="form-label") }}
+                {{ form.fecha_despacho(class="form-control", type="date") }}
+                {% for error in form.fecha_despacho.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="mb-3">
+              {% if tipo == 'entrada' %}
+                {{ form.remitente.label(class="form-label") }}
+                {{ form.remitente(class="form-control") }}
+                {% for error in form.remitente.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+              {% else %}
+                {{ form.destinatario.label(class="form-label") }}
+                {{ form.destinatario(class="form-control") }}
+                {% for error in form.destinatario.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-6">
+            {% if tipo == 'salida' %}
+            <div class="mb-3">
+              {{ form.remitente_interno.label(class="form-label") }}
+              {{ form.remitente_interno(class="form-control") }}
+              {% for error in form.remitente_interno.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          {{ form.descripcion.label(class="form-label") }}
+          {{ form.descripcion(class="form-control", rows="3") }}
+          {% for error in form.descripcion.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.observaciones.label(class="form-label") }}
+          {{ form.observaciones(class="form-control", rows="2") }}
+          {% for error in form.observaciones.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.archivo.label(class="form-label") }}
+          {{ form.archivo(class="form-control") }}
+          <div class="form-text">Se permiten PDF, JPG o PNG (máx. 20MB)</div>
+          {% for error in form.archivo.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+        </div>
+
+        <div class="d-flex gap-2">
+          {{ form.submit(class="btn btn-success") }}
+          <a href="{{ url_for('documentos.index') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

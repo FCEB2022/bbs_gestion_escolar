@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Documentos — Registro Entrada/Salida{% endblock %}
+{% block content %}
+<div class="container-fluid py-3">
+
+  <div class="row">
+    <!-- Tarjeta Nuevo Registro -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header bg-success text-white">
+          <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Nuevo Registro</h5>
+        </div>
+        <div class="card-body text-center">
+          <p class="card-text">Crear un nuevo registro de entrada o salida de documentos</p>
+          <div class="btn-group" role="group">
+            <a href="{{ url_for('documentos.nuevo', tipo='entrada') }}" class="btn btn-success">
+              <i class="fas fa-file-import me-2"></i>Entrada
+            </a>
+            <a href="{{ url_for('documentos.nuevo', tipo='salida') }}" class="btn btn-info">
+              <i class="fas fa-file-export me-2"></i>Salida
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta Historial -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header bg-secondary text-white">
+          <h5 class="mb-0"><i class="fas fa-history me-2"></i>Historial</h5>
+        </div>
+        <div class="card-body text-center">
+          <p class="card-text">Consultar el historial de registros de entrada y salida</p>
+          <div class="btn-group" role="group">
+            <a href="{{ url_for('documentos.entradas') }}" class="btn btn-outline-primary">
+              <i class="fas fa-inbox me-2"></i>Entradas
+            </a>
+            <a href="{{ url_for('documentos.salidas') }}" class="btn btn-outline-info">
+              <i class="fas fa-outbox me-2"></i>Salidas
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta Estadísticas -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header bg-warning">
+          <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Estadísticas</h5>
+        </div>
+        <div class="card-body text-center">
+          <p class="card-text">Ver estadísticas y reportes de documentos</p>
+          <a href="{{ url_for('documentos.estadisticas') }}" class="btn btn-warning">
+            <i class="fas fa-chart-line me-2"></i>Ver estadísticas
+          </a>
+          <div class="row text-center mt-4">
+            <div class="col-6"><h3>{{ total_entradas }}</h3><p class="text-muted">Entradas</p></div>
+            <div class="col-6"><h3>{{ total_salidas }}</h3><p class="text-muted">Salidas</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

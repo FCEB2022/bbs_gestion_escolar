@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Validación de Cursos{% endblock %}
+
+{% block content %}
+<div class="container mt-4 fade-in">
+  <h2 class="text-success mb-4"><i class="fas fa-graduation-cap me-2"></i>Validación de Cursos</h2>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-success text-white">
+      <strong>Cursos Pendientes de Validación</strong>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-success">
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Duración (h)</th>
+            <th>Horas Semanales</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in cursos if c.estado == 'PENDIENTE_VALIDACION' %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ c.nombre }}</td>
+            <td>{{ c.tipo }}</td>
+            <td>{{ c.duracion_horas }}</td>
+            <td>{{ c.horas_semanales }}</td>
+            <td><span class="badge bg-warning text-dark">{{ c.estado }}</span></td>
+            <td>
+              <form method="post" action="{{ url_for('validaciones.validar_curso', id=c.id) }}" class="d-inline">
+                <button class="btn btn-success btn-sm"><i class="fas fa-check"></i> Validar</button>
+              </form>
+              <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rechazoModal{{ c.id }}"><i class="fas fa-times"></i> Rechazar</button>
+
+              <!-- Modal Rechazo -->
+              <div class="modal fade" id="rechazoModal{{ c.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                  <form method="post" action="{{ url_for('validaciones.rechazar_curso', id=c.id) }}">
+                    <div class="modal-content">
+                      <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Rechazar Curso</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="form-group">
+                          <label>Motivo del rechazo</label>
+                          <textarea class="form-control" name="observacion" rows="3" required></textarea>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">Confirmar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-center text-muted">No hay cursos pendientes</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-danger text-white">
+      <strong>Cursos Rechazados</strong>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-danger">
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Duración (h)</th>
+            <th>Observación</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in cursos if c.estado == 'RECHAZADO' %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ c.nombre }}</td>
+            <td>{{ c.tipo }}</td>
+            <td>{{ c.duracion_horas }}</td>
+            <td>{{ c.observacion_rechazo or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="text-center text-muted">No hay cursos rechazados</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

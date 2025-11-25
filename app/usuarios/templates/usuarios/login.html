@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Acceso — BBS{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center align-items-center min-vh-75 px-3">
+  <div class="col-12 col-md-10 col-lg-8">
+    <div class="card border-0 shadow-lg overflow-hidden">
+      <div class="row g-0">
+        <!-- Lado verde con marca -->
+        <div class="col-lg-5 d-none d-lg-flex flex-column justify-content-center text-white p-4" style="background:#2A7B3F;">
+          <div class="text-center">
+            <img src="{{ url_for('static', filename='img/logo-bbs.png') }}" alt="BANGE" class="login-logo mb-3" onerror="this.style.display='none'">
+            <h2 class="fw-bold mb-1">BANGE BUSINESS SCHOOL</h2>
+            <p class="mb-0 opacity-75">Sistema de Gestión Escolar</p>
+          </div>
+        </div>
+
+        <!-- Formulario -->
+        <div class="col-lg-7 bg-white">
+          <div class="p-4 p-md-5">
+            <h3 class="fw-bold mb-3"><i class="fa-solid fa-right-to-bracket me-2"></i>Iniciar sesión</h3>
+            <p class="text-muted mb-4">Introduce tus credenciales para acceder al panel.</p>
+
+            <form method="post" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.username.label(class="form-label") }}
+                    {{ form.username(class="form-control form-control-lg", placeholder="admin") }}
+                </div>
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control form-control-lg", placeholder="••••••••") }}
+                </div>
+                {{ form.submit(class="btn btn-primary btn-lg w-100") }}
+            </form>
+
+            <div class="text-center mt-3 small text-muted">
+              © {{ hoy.year if hoy else '' }} BANGE Business School
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

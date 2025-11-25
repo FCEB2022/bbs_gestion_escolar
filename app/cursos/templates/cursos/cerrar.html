@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Cerrar Curso — BBS{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+
+  <!-- Card principal -->
+  <div class="card shadow-lg border-0">
+    <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#6c757d; color:white;">
+      <h4 class="mb-0"><i class="fas fa-lock me-2"></i>Cerrar Curso</h4>
+      <a href="{{ url_for('cursos.detalle', curso_id=curso.id) }}" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Volver
+      </a>
+    </div>
+
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      <div class="card-body text-center">
+        <h5 class="text-secondary fw-bold mb-4">{{ curso.nombre }}</h5>
+
+        <p class="text-muted mb-4">
+          Estás a punto de marcar este curso como <strong>cerrado</strong>.
+          <br>
+          Esta acción indica que el curso ha finalizado y no podrá ser editado ni reprogramado.
+        </p>
+
+        <div class="alert alert-warning text-start" role="alert">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Importante:</strong> Esta acción debe realizarse solo una vez que el curso haya concluido por completo.
+          El cierre será revisado y validado por el equipo directivo.
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 mt-4">
+          <a href="{{ url_for('cursos.detalle', curso_id=curso.id) }}" class="btn btn-outline-secondary px-4">
+            <i class="fas fa-times me-1"></i> Cancelar
+          </a>
+          {{ form.confirmar(class="btn btn-dark px-4") }}
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  .card {
+    border-radius: 12px;
+  }
+  .alert {
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+</style>
+{% endblock %}

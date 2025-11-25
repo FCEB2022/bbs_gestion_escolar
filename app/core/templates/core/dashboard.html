@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Panel Principal — BANGE Business School{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <div class="container text-center">
+
+    <!-- Encabezado centrado -->
+    <div class="text-center my-5">
+      <h1 class="dashboard-title">
+        SISTEMA DE GESTIÓN ESCOLAR
+      </h1>
+      <p class="dashboard-subtitle">PANEL PRINCIPAL</p>
+    </div>
+
+    <!-- Grid de módulos -->
+    <div class="modules-grid text-start mt-5">
+      <h2 class="section-title"><i class="fas fa-th-large me-2"></i>Módulos del Sistema</h2>
+
+      <div class="row g-4">
+        {% set modulos = [
+        ("Gestión de Usuarios","fa-users-cog","Administración de usuarios y roles","usuarios.index","ACTIVO"),
+        ("Documentos","fa-file-import","Gestión documental","documentos.index","ACTIVO"),
+        ("Cursos","fa-book-open","Administración académica","cursos.index","ACTIVO"),
+        ("Matrículas","fa-user-graduate","Inscripción de estudiantes","matriculas.index","ACTIVO"),
+        ("Pagos","fa-credit-card","Control de cuotas y cobros","pagos.index","ACTIVO"),
+        ("Actas y Expedientes","fa-file-contract","Gestión de actas y expedientes","actas_expedientes.index","EN
+        DESARROLLO"),
+        ("Validaciones","fa-check-double","Revisión y aprobación","validaciones.index","ACTIVO"),
+        ("Proyectos","fa-project-diagram","Gestión de proyectos académicos","proyectos.index","EN DESARROLLO"),
+        ("Estadísticas","fa-chart-line","Indicadores y reportes","estadisticas.index","ACTIVO")
+        ] %}
+
+        {% for titulo, icono, desc, endpoint, estado in modulos %}
+        <div class="col-md-6 col-lg-4">
+          <div class="glass-card h-100" onclick="location.href='{{ url_for(endpoint) }}'">
+            <div class="module-card">
+              <div class="d-flex justify-content-between w-100 align-items-start">
+                <div class="module-icon"><i class="fas {{ icono }}"></i></div>
+                <span class="status-badge {{ 'status-active' if estado=='ACTIVO' else 'status-dev' }}">
+                  {{ estado }}
+                </span>
+              </div>
+
+              <h3 class="module-title">{{ titulo }}</h3>
+              <p class="module-desc">{{ desc }}</p>
+
+              <div class="mt-auto pt-3 w-100">
+                <div class="d-flex align-items-center text-primary"
+                  style="font-size: 0.85rem; font-weight: 600; color: var(--primary-glow) !important;">
+                  <span>ACCEDER</span>
+                  <i class="fas fa-arrow-right ms-2"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

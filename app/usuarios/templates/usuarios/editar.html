@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Editar usuario — BANGE Business School{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h3 class="fw-bold text-success mb-4">
+    <i class="fa-solid fa-user-pen me-2"></i> Editar usuario
+  </h3>
+
+  <form method="post">
+    {{ form.hidden_tag() }}
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Nombre de usuario</label>
+        {{ form.username(class="form-control") }}
+        {% for e in form.username.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Nombre completo</label>
+        {{ form.full_name(class="form-control") }}
+        {% for e in form.full_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Correo (opcional)</label>
+        {{ form.email(class="form-control") }}
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Roles</label>
+        {{ form.roles(class="form-select", multiple=true) }}
+      </div>
+
+      <div class="col-md-6 d-flex align-items-end">
+        <div class="form-check">
+          {{ form.activo(class="form-check-input") }}
+          <label class="form-check-label">Activo</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <button type="submit" class="btn btn-success">
+        <i class="fa-solid fa-floppy-disk me-1"></i> Actualizar
+      </button>
+      <a href="{{ url_for('usuarios.index') }}" class="btn btn-outline-secondary">Volver</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

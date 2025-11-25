@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Cambiar Contraseña — BANGE Business School{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom">
+      <h5 class="mb-0 text-success"><i class="fas fa-key me-2"></i>Cambiar Contraseña</h5>
+    </div>
+
+    <div class="card-body">
+      <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            {{ form.contrasena_actual.label(class="form-label fw-semibold") }}
+            {{ form.contrasena_actual(class="form-control", placeholder="Contraseña actual") }}
+            {% for error in form.contrasena_actual.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-md-6 mb-3">
+            {{ form.nueva_contrasena.label(class="form-label fw-semibold") }}
+            {{ form.nueva_contrasena(class="form-control", placeholder="Nueva contraseña") }}
+            {% for error in form.nueva_contrasena.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-md-6 mb-3">
+            {{ form.confirmar_contrasena.label(class="form-label fw-semibold") }}
+            {{ form.confirmar_contrasena(class="form-control", placeholder="Confirmar nueva contraseña") }}
+            {% for error in form.confirmar_contrasena.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <a href="{{ url_for('perfil.ver_perfil') }}" class="btn btn-outline-secondary me-2">Cancelar</a>
+          <button type="submit" class="btn btn-success">Actualizar Contraseña</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

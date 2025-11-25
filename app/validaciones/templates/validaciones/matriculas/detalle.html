@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Validar Matrícula — BBS{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="fas fa-user-check me-2"></i>Validar Matrícula</h4>
+        </div>
+
+        <div class="card-body">
+            <!-- Información de la matrícula -->
+            <h5 class="fw-bold text-success">{{ matricula.estudiante_nombre }}</h5>
+            <p class="text-muted">{{ matricula.curso.nombre }}</p>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Documento:</strong> {{ matricula.doc_identidad or '-' }}</p>
+                    <p><strong>Teléfono:</strong> {{ matricula.telefono or '-' }}</p>
+                    <p><strong>Email:</strong> {{ matricula.email or '-' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Campus:</strong> {{ matricula.campus }}</p>
+                    <p><strong>Coste Total:</strong> {{ matricula.coste_total }} XAF</p>
+                    <p><strong>Estado Actual:</strong> 
+                        <span class="badge bg-warning text-dark">Pendiente de Validación</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Documentos -->
+            <h6 class="fw-bold text-primary mb-3">
+                <i class="fas fa-file-alt me-2"></i>Documentos Adjuntos
+            </h6>
+            <div class="row mb-4">
+                {% for doc in matricula.documentos %}
+                <div class="col-md-6 mb-2">
+                    <div class="d-flex justify-content-between align-items-center border p-2 rounded">
+                        <span>
+                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                            {{ doc.tipo|replace("_", " ")|title }}
+                        </span>
+                        <a href="{{ url_for('static', filename=doc.path.replace('static/', '')) }}" 
+                           target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <p class="text-muted">No hay documentos adjuntos.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 🔥 FORMULARIOS MEJORADOS - SOLUCIÓN DEFINITIVA -->
+            <div class="border-top pt-4 mt-4">
+                <h6 class="fw-bold text-success mb-3">
+                    <i class="fas fa-tasks me-2"></i>Acciones de Validación
+                </h6>
+                
+                <div class="row">
+                    <!-- FORMULARIO DE VALIDACIÓN -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="fas fa-check-circle me-2"></i>Validar Matrícula</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">¿La documentación es correcta y completa?</p>
+                                <form method="POST" id="form-validar">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="d-grid">
+                                        <button type="submit" name="validar_matricula" value="1" 
+                                                class="btn btn-success"
+                                                onclick="return confirm('¿Confirmar VALIDACIÓN de esta matrícula? Esta acción no se puede deshacer.')">
+                                            <i class="fas fa-check-circle me-2"></i> Validar Matrícula
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FORMULARIO DE RECHAZO -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h6 class="mb-0"><i class="fas fa-times-circle me-2"></i>Rechazar Matrícula</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">¿Hay problemas con la documentación?</p>
+                                <form method="POST" id="form-rechazar">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold text-danger">
+                                            Motivo del rechazo <small class="text-muted">(requerido)</small>
+                                        </label>
+                                        <textarea name="motivo_rechazo" class="form-control" rows="3" 
+                                                  placeholder="Describa detalladamente los motivos del rechazo..."
+                                                  required minlength="5"></textarea>
+                                        <div class="form-text">Mínimo 5 caracteres. Este motivo se registrará en el sistema.</div>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" name="rechazar_matricula" value="1" 
+                                                class="btn btn-danger"
+                                                onclick="return confirm('¿Confirmar RECHAZO de esta matrícula? Esta acción no se puede deshacer.')">
+                                            <i class="fas fa-times-circle me-2"></i> Rechazar Matrícula
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de volver -->
+            <div class="text-center mt-4">
+                <a href="{{ url_for('validaciones.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Volver al Panel de Validaciones
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script para mejoras de UX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validación del formulario de rechazo
+    const formRechazar = document.getElementById('form-rechazar');
+    if (formRechazar) {
+        formRechazar.addEventListener('submit', function(e) {
+            const motivo = this.querySelector('textarea[name="motivo_rechazo"]');
+            if (motivo && motivo.value.trim().length < 5) {
+                e.preventDefault();
+                alert('⚠️ Debe ingresar un motivo de rechazo de al menos 5 caracteres.');
+                motivo.focus();
+            }
+        });
+    }
+    
+    // Mostrar loading al enviar formularios
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function() {
+            const btn = this.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Procesando...';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

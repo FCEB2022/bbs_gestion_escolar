@@ -1,0 +1,363 @@
+/* =====================================================
+   BANGE Business School - Sistema de Gestión Escolar
+   Theme: Dark Glassmorphism Futurista (con soporte Light Mode)
+   ===================================================== */
+
+/* ----------- Variables y Configuración ----------- */
+:root {
+  /* Tema Oscuro (Por defecto) */
+  --bg-body: #0f172a;
+  --bg-card: rgba(30, 41, 59, 0.7);
+  --bg-glass: rgba(255, 255, 255, 0.05);
+  --border-glass: 1px solid rgba(255, 255, 255, 0.1);
+
+  --primary: #2A7B3F;
+  --primary-glow: #00ff9d;
+  --secondary: #64748b;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+
+  --font-main: 'Outfit', 'Inter', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --backdrop-blur: blur(12px);
+}
+
+[data-theme="light"] {
+  /* Tema Claro (Sobreescritura) */
+  --bg-body: #f8f9fa;
+  --bg-card: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.9);
+  --border-glass: 2px solid #2A7B3F;
+  /* Borde verde diferenciado */
+
+  --primary: #2A7B3F;
+  --primary-glow: #2A7B3F;
+  /* Verde corporativo */
+  --secondary: #adb5bd;
+  --text-main: #212529;
+  --text-muted: #6c757d;
+
+  --shadow-glass: 0 4px 12px rgba(42, 123, 63, 0.15);
+  --backdrop-blur: none;
+}
+
+/* ----------- Fuentes y cuerpo general ----------- */
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-body);
+  /* El fondo con gradientes se mantiene sutil, adaptándose a los colores de fondo */
+  background-image:
+    radial-gradient(at 0% 0%, rgba(42, 123, 63, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(0, 255, 157, 0.1) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  color: var(--text-main);
+  /* Adaptable al tema */
+  letter-spacing: -0.02em;
+}
+
+/* En modo oscuro forzamos blanco para contraste con fondos oscuros si no es var(--text-main) */
+:root:not([data-theme="light"]) h1,
+:root:not([data-theme="light"]) h2,
+:root:not([data-theme="light"]) h3 {
+  color: #fff;
+}
+
+a {
+  text-decoration: none;
+  color: var(--primary-glow);
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: var(--text-main);
+  text-shadow: 0 0 10px var(--primary-glow);
+}
+
+/* ----------- Utilidades Glassmorphism ----------- */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: var(--border-glass);
+  box-shadow: var(--shadow-glass);
+  border-radius: 16px;
+}
+
+.glass-card {
+  background: var(--bg-card);
+  /* Usar variable para permitir cambio a blanco sólido */
+  backdrop-filter: var(--backdrop-blur);
+  border: var(--border-glass);
+  border-radius: 16px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary-glow);
+  box-shadow: 0 0 20px rgba(42, 123, 63, 0.3);
+}
+
+/* ----------- Navbar superior ----------- */
+.navbar {
+  background: var(--bg-glass) !important;
+  backdrop-filter: var(--backdrop-blur);
+  border-bottom: var(--border-glass);
+  padding: 1rem 0;
+  transition: background 0.3s ease;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--text-main) !important;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-brand img {
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(42, 123, 63, 0.5);
+}
+
+.nav-link {
+  color: var(--text-muted) !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem !important;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--text-main) !important;
+  background: rgba(42, 123, 63, 0.1);
+}
+
+/* ----------- Dashboard Elements ----------- */
+.dashboard-title {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(to right, var(--text-main), var(--primary-glow));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.section-title {
+  color: var(--primary-glow);
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title::after {
+  content: '';
+  flex-grow: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--primary-glow), transparent);
+  opacity: 0.3;
+}
+
+/* ----------- Module Cards ----------- */
+.module-card {
+  padding: 2rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  /* Estilos base heredados de glass-card */
+}
+
+.module-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(42, 123, 63, 0.2), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.module-card:hover::before {
+  opacity: 1;
+}
+
+.module-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--primary-glow);
+  filter: drop-shadow(0 0 10px rgba(42, 123, 63, 0.3));
+  transition: transform 0.4s ease;
+}
+
+.module-card:hover .module-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.module-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.module-desc {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.status-badge {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.status-active {
+  background: rgba(42, 123, 63, 0.3);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+[data-theme="light"] .status-active {
+  color: #15803d;
+  border-color: #15803d;
+}
+
+.status-dev {
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+  border: 1px solid rgba(129, 140, 248, 0.2);
+}
+
+/* ----------- Botones ----------- */
+.btn {
+  border-radius: 10px;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.85rem;
+}
+
+.btn-primary-glow {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  box-shadow: 0 0 15px rgba(42, 123, 63, 0.4);
+}
+
+.btn-primary-glow:hover {
+  background: #256735;
+  box-shadow: 0 0 25px rgba(0, 255, 157, 0.4);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* ----------- Alerts & Flash Messages ----------- */
+.alert {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: var(--border-glass);
+  color: var(--text-main);
+  border-radius: 12px;
+}
+
+.alert-success {
+  border-left: 4px solid var(--primary-glow);
+}
+
+.alert-danger {
+  border-left: 4px solid #ef4444;
+}
+
+.alert-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+/* ----------- Footer ----------- */
+footer {
+  border-top: 1px solid var(--border-glass);
+  padding: 2rem 0;
+  margin-top: 4rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ----------- Scrollbar ----------- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-body);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* ----------- Animations ----------- */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}

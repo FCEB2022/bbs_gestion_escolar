@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Notas | BANGE Business School{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a
+                        href="{{ url_for('matriculas.detalle', matricula_id=ma.matricula_id) }}">Matrícula</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Gestión de Notas</li>
+            </ol>
+        </nav>
+        <h1 class="display-6 fw-bold text-gradient">{{ ma.modulo.nombre }}</h1>
+        <p class="text-muted">Estudiante: <span class="fw-bold text-main">{{ ma.matricula.estudiante_nombre }}</span>
+        </p>
+    </div>
+    <a href="{{ url_for('matriculas.detalle', matricula_id=ma.matricula_id) }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Volver
+    </a>
+</div>
+
+<div class="row">
+    <!-- Columna Izquierda: Resumen y Nota Final -->
+    <div class="col-lg-4 mb-4">
+        <div class="glass-panel p-4 text-center h-100 d-flex flex-col justify-content-center">
+            <h5 class="text-muted text-uppercase text-xs fw-bold mb-3">Nota Final Calculada</h5>
+
+            <div class="display-3 fw-bold mb-2 {{ 'text-success' if (ma.nota or 0) >= 5 else 'text-danger' }}"
+                style="word-break: break-all;">
+                {{ "%.2f"|format(ma.nota or 0) }}
+            </div>
+
+            <div class="badge {{ 'bg-success' if (ma.nota or 0) >= 5 else 'bg-danger' }} fs-6 mb-4 text-wrap">
+                {{ ma.estado or 'PENDIENTE' }}
+            </div>
+
+            <hr class="opacity-20 my-4">
+
+            <div class="text-start">
+                <h6 class="fw-bold mb-3 text-sm">Criterios de Evaluación:</h6>
+                <ul class="list-unstyled text-sm text-muted">
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span><i class="fas fa-circle text-xs me-2 text-primary"></i>Exámenes Ordinarios</span>
+                        <span class="fw-bold">10%</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span><i class="fas fa-circle text-xs me-2 text-info"></i>Exámenes Parciales</span>
+                        <span class="fw-bold">30%</span>
+                    </li>
+                    <li class="mb-2 d-flex justify-content-between">
+                        <span><i class="fas fa-circle text-xs me-2 text-warning"></i>Examen Final</span>
+                        <span class="fw-bold">60%</span>
+                    </li>
+                    <li class="mt-3 text-xs fst-italic border-top pt-2">
+                        * Si existe nota de <span class="text-danger fw-bold">Recuperación</span>, esta será la nota
+                        final definitiva.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna Derecha: Gestión de Notas -->
+    <div class="col-lg-8">
+        <!-- Formulario de Agregar Nota -->
+        <div class="glass-panel p-4 mb-4">
+            <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle me-2 text-primary"></i>Agregar Calificación</h5>
+            <form action="{{ url_for('matriculas.agregar_calificacion') }}" method="POST"
+                class="row g-3 align-items-end">
+                {{ form.hidden_tag() }}
+                <input type="hidden" name="matricula_asignatura_id" value="{{ ma.id }}">
+
+                <div class="col-md-4">
+                    <label class="form-label text-xs text-uppercase fw-bold">{{ form.tipo.label }}</label>
+                    {{ form.tipo(class="form-select") }}
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label text-xs text-uppercase fw-bold">{{ form.valor.label }}</label>
+                    {{ form.valor(class="form-control", placeholder="Ej: 8.5", step="0.01") }}
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label text-xs text-uppercase fw-bold">{{ form.observacion.label }}</label>
+                    {{ form.observacion(class="form-control", placeholder="Ej: Tema 1") }}
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary-glow w-100">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Listado de Notas -->
+        <div class="glass-panel p-0 overflow-hidden">
+            <div class="p-3 bg-light border-bottom">
+                <h6 class="mb-0 fw-bold">Registro de Calificaciones</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" style="color: var(--text-main);">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4 text-uppercase text-xs text-muted">Tipo</th>
+                            <th class="text-uppercase text-xs text-muted">Fecha</th>
+                            <th class="text-uppercase text-xs text-muted">Observación</th>
+                            <th class="text-center text-uppercase text-xs text-muted">Nota</th>
+                            <th class="text-end pe-4 text-uppercase text-xs text-muted">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Recuperación -->
+                        {% if recuperacion %}
+                        <tr class="bg-danger bg-opacity-10">
+                            <td class="ps-4"><span class="badge bg-danger">RECUPERACIÓN</span></td>
+                            <td class="text-xs">{{ recuperacion.fecha.strftime('%d/%m/%Y') }}</td>
+                            <td class="text-xs text-muted">{{ recuperacion.observacion or '-' }}</td>
+                            <td class="text-center fw-bold fs-6">{{ "%.2f"|format(recuperacion.valor) }}</td>
+                            <td class="text-end pe-4">
+                                <form
+                                    action="{{ url_for('matriculas.eliminar_calificacion', calificacion_id=recuperacion.id) }}"
+                                    method="POST" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <button type="submit" class="btn btn-link text-danger p-0"
+                                        onclick="return confirm('¿Eliminar nota de recuperación?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                        <!-- Final -->
+                        {% if final %}
+                        <tr>
+                            <td class="ps-4"><span class="badge bg-warning text-dark">FINAL</span></td>
+                            <td class="text-xs">{{ final.fecha.strftime('%d/%m/%Y') }}</td>
+                            <td class="text-xs text-muted">{{ final.observacion or '-' }}</td>
+                            <td class="text-center fw-bold">{{ "%.2f"|format(final.valor) }}</td>
+                            <td class="text-end pe-4">
+                                <form
+                                    action="{{ url_for('matriculas.eliminar_calificacion', calificacion_id=final.id) }}"
+                                    method="POST" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <button type="submit" class="btn btn-link text-danger p-0"
+                                        onclick="return confirm('¿Eliminar nota final?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endif %}
+
+                        <!-- Parciales -->
+                        {% for p in parciales %}
+                        <tr>
+                            <td class="ps-4"><span class="badge bg-info text-dark">PARCIAL</span></td>
+                            <td class="text-xs">{{ p.fecha.strftime('%d/%m/%Y') }}</td>
+                            <td class="text-xs text-muted">{{ p.observacion or '-' }}</td>
+                            <td class="text-center fw-bold">{{ "%.2f"|format(p.valor) }}</td>
+                            <td class="text-end pe-4">
+                                <form action="{{ url_for('matriculas.eliminar_calificacion', calificacion_id=p.id) }}"
+                                    method="POST" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <button type="submit" class="btn btn-link text-danger p-0"
+                                        onclick="return confirm('¿Eliminar nota parcial?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        <!-- Ordinarios -->
+                        {% for o in ordinarios %}
+                        <tr>
+                            <td class="ps-4"><span class="badge bg-primary">ORDINARIO</span></td>
+                            <td class="text-xs">{{ o.fecha.strftime('%d/%m/%Y') }}</td>
+                            <td class="text-xs text-muted">{{ o.observacion or '-' }}</td>
+                            <td class="text-center fw-bold">{{ "%.2f"|format(o.valor) }}</td>
+                            <td class="text-end pe-4">
+                                <form action="{{ url_for('matriculas.eliminar_calificacion', calificacion_id=o.id) }}"
+                                    method="POST" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                    <button type="submit" class="btn btn-link text-danger p-0"
+                                        onclick="return confirm('¿Eliminar nota ordinaria?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                        {% if not (recuperacion or final or parciales or ordinarios) %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                No hay calificaciones registradas.
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

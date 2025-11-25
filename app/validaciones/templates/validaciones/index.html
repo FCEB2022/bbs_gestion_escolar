@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% block title %}Validaciones — BBS{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+      <h4 class="mb-0"><i class="fas fa-check-double me-2"></i>Módulo de Validaciones</h4>
+    </div>
+
+    <div class="card-body">
+      <!-- Pagos Pendientes de Validación -->
+      <h5 class="fw-bold text-primary mb-3"><i class="fas fa-clock me-2"></i>Pagos Pendientes de Validación</h5>
+      {% if pagos_pendientes %}
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead class="table-warning">
+              <tr>
+                <th>Tipo</th>
+                <th>Estudiante</th>
+                <th>Curso</th>
+                <th># Cuota</th>
+                <th>Monto</th>
+                <th>Fecha Pago</th>
+                <th>Comprobante</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pago in pagos_pendientes %}
+                <tr>
+                  <td>
+                    {# Distinguir pago inicial vs cuota: preferimos numero_cuota==0 o campo es_pago_inicial #}
+                    {% if (pago.numero_cuota is defined and pago.numero_cuota == 0) or (pago.es_pago_inicial is defined and pago.es_pago_inicial) %}
+                      <span class="badge bg-info text-dark">Pago inicial</span>
+                    {% elif pago.origen is defined and pago.origen == 'MATRICULA' %}
+                      <span class="badge bg-info text-dark">Pago inicial</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Pago de cuota</span>
+                    {% endif %}
+                  </td>
+
+                  <td>{{ pago.matricula.estudiante_nombre if pago.matricula else '—' }}</td>
+                  <td>{{ pago.matricula.curso.nombre if pago.matricula and pago.matricula.curso else '—' }}</td>
+                  <td>{{ pago.numero_cuota if pago.numero_cuota is defined else '—' }}</td>
+                  <td>{{ "%.2f"|format(pago.monto or 0) }}</td>
+                  <td>{{ pago.fecha_pago.strftime('%d/%m/%Y') if pago.fecha_pago else '—' }}</td>
+
+                  {# ---------- Comprobante (columna nueva) ---------- #}
+                  <td>
+                    {# Buscamos comprobante en varias fuentes, prioridad:
+                       1) campos directos en Pago (documento_id/comprobante_id/documento_path)
+                       2) documento tipo 'factura_primer_pago' vinculado a la matrícula
+                       3) último documento de la matrícula si no hay factura específica
+                    #}
+                    {% set comprobante = None %}
+
+                    {# 1) comprobante directo en pago (varios nombres posibles) #}
+                    {% if pago is defined %}
+                      {% if pago.documento_id is defined and pago.documento_id %}
+                        {% set comprobante = {'id': pago.documento_id} %}
+                      {% elif pago.comprobante_id is defined and pago.comprobante_id %}
+                        {% set comprobante = {'id': pago.comprobante_id} %}
+                      {% elif pago.documento_path is defined and pago.documento_path %}
+                        {# si solo hay path/filename (poco común), devolvemos info mínima #}
+                        {% set comprobante = {'path': pago.documento_path, 'filename': pago.filename if pago.filename is defined else None} %}
+                      {% endif %}
+                    {% endif %}
+
+                    {# 2) si no hay comprobante directo, buscar en la matrícula asociada #}
+                    {% if not comprobante and pago.matricula is defined %}
+                      {% set docs = (pago.matricula.documentos|list) if pago.matricula.documentos is defined else [] %}
+                      {% set factura_docs = docs | selectattr('tipo','equalto','factura_primer_pago') | list %}
+                      {% if factura_docs and factura_docs|length > 0 %}
+                        {% set doc = factura_docs[-1] %}
+                        {% set comprobante = {'id': doc.id, 'path': doc.path, 'filename': doc.filename} %}
+                      {% elif docs and docs|length > 0 %}
+                        {% set doc = docs[-1] %}
+                        {% set comprobante = {'id': doc.id, 'path': doc.path, 'filename': doc.filename} %}
+                      {% endif %}
+                    {% endif %}
+
+                    {# Renderizar botón de descarga si hay comprobante identificado #}
+                    {% if comprobante %}
+                      {% if comprobante.id %}
+                        <a href="{{ url_for('matriculas.descargar_documentos', matricula_id=pago.matricula.id, documento_id=comprobante.id) }}" class="btn btn-sm btn-outline-primary" target="_blank" title="Descargar comprobante">
+                          <i class="fas fa-download me-1"></i> Descargar
+                        </a>
+                        {% if comprobante.filename %}
+                          <div class="small text-muted mt-1">{{ comprobante.filename }}</div>
+                        {% endif %}
+                      {% elif comprobante.path %}
+                        {# No tenemos id (caso raro) — redirigir al detalle del pago para permitir descarga allí #}
+                        <a href="{{ url_for('pagos.detalles_pago', pago_id=pago.id) }}" class="btn btn-sm btn-outline-secondary" title="Ver comprobante en detalle">
+                          <i class="fas fa-file-medical-alt me-1"></i> Ver comprobante
+                        </a>
+                        {% if comprobante.filename %}
+                          <div class="small text-muted mt-1">{{ comprobante.filename }}</div>
+                        {% endif %}
+                      {% else %}
+                        <span class="text-muted small">No accesible</span>
+                      {% endif %}
+                    {% else %}
+                      <span class="text-muted small">Sin comprobante</span>
+                    {% endif %}
+                  </td>
+
+                  {# ---------- Acciones ---------- #}
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <!-- Formulario para Validar Pago -->
+                      <form method="POST" action="{{ url_for('validaciones.validar_pago', pago_id=pago.id) }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" class="btn btn-success" onclick="return confirm('¿Validar este pago?')">
+                          <i class="fas fa-check"></i> Validar
+                        </button>
+                      </form>
+
+                      <!-- Botón para Rechazar Pago (abre modal) -->
+                      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalRechazarPago{{ pago.id }}">
+                        <i class="fas fa-times"></i> Rechazar
+                      </button>
+
+                      <!-- Ver detalle del pago -->
+                      <a href="{{ url_for('pagos.detalles_pago', pago_id=pago.id) }}" class="btn btn-info">
+                        <i class="fas fa-eye"></i> Ver
+                      </a>
+                    </div>
+
+                    <!-- Modal para Rechazar Pago -->
+                    <div class="modal fade" id="modalRechazarPago{{ pago.id }}" tabindex="-1">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">Rechazar Pago</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                          </div>
+                          <form method="POST" action="{{ url_for('validaciones.rechazar_pago', pago_id=pago.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <div class="modal-body">
+                              <p><strong>Estudiante:</strong> {{ pago.matricula.estudiante_nombre if pago.matricula else '—' }}</p>
+                              <p><strong>Cuota:</strong> {{ pago.numero_cuota if pago.numero_cuota is defined else '—' }} - {{ "%.2f"|format(pago.monto or 0) }} </p>
+                              <div class="mb-3">
+                                <label class="form-label fw-bold">Motivo del Rechazo</label>
+                                <textarea class="form-control" name="motivo" rows="3" required placeholder="Explique el motivo del rechazo..."></textarea>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                              <button type="submit" class="btn btn-danger">Rechazar Pago</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info">No hay pagos pendientes de validación.</div>
+      {% endif %}
+
+      <!-- Pagos Vencidos -->
+      <h5 class="fw-bold text-danger mt-5 mb-3"><i class="fas fa-exclamation-triangle me-2"></i>Pagos Fuera de Plazo</h5>
+      {% if pagos_vencidos %}
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead class="table-danger">
+              <tr>
+                <th>Estudiante</th>
+                <th>Curso</th>
+                <th># Cuota</th>
+                <th>Monto (XAF)</th>
+                <th>Vencimiento</th>
+                <th>Días de Retraso</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pago in pagos_vencidos %}
+                <tr>
+                  <td>{{ pago.matricula.estudiante_nombre }}</td>
+                  <td>{{ pago.matricula.curso.nombre }}</td>
+                  <td>{{ pago.numero_cuota }}</td>
+                  <td>{{ "%.2f"|format(pago.monto) }}</td>
+                  <td>{{ pago.fecha_vencimiento.strftime('%d/%m/%Y') if pago.fecha_vencimiento else 'N/A' }}</td>
+                  <td>
+                    {% if pago.fecha_vencimiento %}
+                      {% set dias_retraso = (hoy - pago.fecha_vencimiento).days %}
+                      <span class="badge bg-danger">{{ dias_retraso }} días</span>
+                    {% else %}
+                      <span class="badge bg-secondary">N/A</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="{{ url_for('pagos.detalles_pago', pago_id=pago.id) }}" class="btn btn-sm btn-outline-info">
+                      <i class="fas fa-eye"></i> Ver
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-success">No hay pagos fuera de plazo.</div>
+      {% endif %}
+
+      <!-- Cursos Pendientes de Validación -->
+      <h5 class="fw-bold text-success mt-5 mb-3"><i class="fas fa-graduation-cap me-2"></i>Cursos Pendientes de Validación</h5>
+      {% if cursos_pendientes %}
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead class="table-success">
+              <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Creado por</th>
+                <th>Tipo</th>
+                <th>Duración (h)</th>
+                <th>Horas Semanales</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for curso in cursos_pendientes %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>{{ curso.nombre }}</td>
+                  <td>
+                    {% if curso.created_by %}
+                      {{ curso.created_by.full_name or curso.created_by.username }}
+                    {% else %}
+                      —
+                    {% endif %}
+                  </td>
+                  <td>{{ curso.tipo }}</td>
+                  <td>{{ curso.duracion_horas if curso.duracion_horas is defined else curso.horas_totales }}</td>
+                  <td>{{ curso.horas_semanales if curso.horas_semanales is defined else curso.horas_semanales }}</td>
+                  <td><span class="badge bg-warning text-dark">{{ curso.estado }}</span></td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <form method="POST" action="{{ url_for('validaciones.validar_curso', curso_id=curso.id) }}" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit" class="btn btn-success" onclick="return confirm('¿Validar este curso?')">
+                          <i class="fas fa-check"></i> Validar
+                        </button>
+                      </form>
+                      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalRechazarCurso{{ curso.id }}">
+                        <i class="fas fa-times"></i> Rechazar
+                      </button>
+                      <a href="{{ url_for('cursos.detalle', curso_id=curso.id) }}" class="btn btn-info">
+                        <i class="fas fa-eye"></i> Ver
+                      </a>
+                    </div>
+
+                    <!-- Modal para Rechazar Curso -->
+                    <div class="modal fade" id="modalRechazarCurso{{ curso.id }}" tabindex="-1">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">Rechazar Curso</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                          </div>
+                          <form method="POST" action="{{ url_for('validaciones.rechazar_curso', curso_id=curso.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <div class="modal-body">
+                              <p><strong>Curso:</strong> {{ curso.nombre }}</p>
+                              <p><strong>Tipo:</strong> {{ curso.tipo }}</p>
+
+                              <div class="mb-3">
+                                <label class="form-label fw-bold">Motivo del Rechazo</label>
+                                <textarea class="form-control" name="observacion" rows="3" required placeholder="Explique el motivo del rechazo del curso..."></textarea>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                              <button type="submit" class="btn btn-danger">Rechazar Curso</button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info">No hay cursos pendientes de validación.</div>
+      {% endif %}
+
+      <!-- Cursos Rechazados -->
+      <h5 class="fw-bold text-danger mt-5 mb-3"><i class="fas fa-ban me-2"></i>Cursos Rechazados</h5>
+      {% if cursos_rechazados %}
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead class="table-danger">
+              <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Duración (h)</th>
+                <th>Observación</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for curso in cursos_rechazados %}
+                <tr>
+                  <td>{{ loop.index }}</td>
+                  <td>{{ curso.nombre }}</td>
+                  <td>{{ curso.tipo }}</td>
+                  <td>{{ curso.duracion_horas if curso.duracion_horas is defined else curso.horas_totales }}</td>
+                  <td>{{ curso.observacion_rechazo or curso.motivo_rechazo or '—' }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-success">No hay cursos rechazados.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

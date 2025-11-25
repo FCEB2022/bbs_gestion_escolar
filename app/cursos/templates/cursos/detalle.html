@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Detalle del curso — {{ curso.nombre }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow-sm border-0">
+    <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(90deg, rgba(42,123,63,0.12), rgba(255,255,255,0));">
+      <div>
+        <h4 class="mb-0 fw-bold text-dark"><i class="fas fa-graduation-cap me-2 text-success"></i>{{ curso.nombre }}</h4>
+        <small class="text-muted">ID: {{ curso.id }}</small>
+      </div>
+      <div class="text-end">
+        <span class="badge bg-{{ 'warning' if curso.estado in ['BORRADOR','PENDIENTE_VALIDACION'] else ('secondary' if curso.estado=='VALIDADO' else 'dark') }} text-dark">
+          {{ curso.estado }}
+        </span>
+        <div class="small text-muted mt-1">
+          {% if curso.created_at %}Creado: {{ curso.created_at.strftime('%d/%m/%Y') }}{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- Info general -->
+      <div class="row mb-4">
+        <div class="col-lg-8">
+          <dl class="row mb-0">
+            <dt class="col-sm-4 text-muted">Tipo</dt>
+            <dd class="col-sm-8">{{ curso.tipo }}</dd>
+
+            <dt class="col-sm-4 text-muted">Horas totales</dt>
+            <dd class="col-sm-8">{{ curso.horas_totales or curso.duracion_horas or '—' }}</dd>
+
+            <dt class="col-sm-4 text-muted">Horas semanales</dt>
+            <dd class="col-sm-8">{{ curso.horas_semanales or '—' }}</dd>
+
+            <dt class="col-sm-4 text-muted">Plantilla</dt>
+            <dd class="col-sm-8">{{ 'Sí' if curso.es_plantilla else 'No' }}</dd>
+          </dl>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="bg-white p-3 rounded shadow-sm h-100">
+            <p class="mb-2"><strong class="text-muted">Creado por</strong></p>
+            <p class="mb-1">
+              {% if curso.created_by %}
+                <i class="fas fa-user-circle text-secondary me-1"></i>
+                {{ curso.created_by.full_name or curso.created_by.username }}
+              {% else %}
+                —
+              {% endif %}
+            </p>
+            <p class="mb-0 small text-muted">
+              {% if curso.updated_at %}Última modificación: {{ curso.updated_at.strftime('%d/%m/%Y %H:%M') }}{% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-3">
+
+      <!-- MÓDULOS -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0"><i class="fas fa-th-large me-2 text-success"></i>Módulos</h5>
+        <small class="text-muted">{{ curso.modulos|length }} módulo{{ 's' if curso.modulos|length != 1 else '' }}</small>
+      </div>
+
+      {% if grupos %}
+        <!-- Vista agrupada por año y semestre (FP) -->
+        <div class="row g-3">
+          {% for anio in [1,2] %}
+            <div class="col-12">
+              <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                  <h6 class="mb-3 fw-semibold">Año {{ anio }}</h6>
+                  <div class="row">
+                    {% for semestre in [1,2] %}
+                      <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-success-subtle">
+                          <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                              <h6 class="card-title mb-0">Semestre {{ semestre }}</h6>
+                              {% set modulos_sem = grupos.get(anio, {}).get(semestre, []) %}
+                              {% if modulos_sem %}
+                                <span class="badge bg-success">{{ modulos_sem|length }}</span>
+                              {% endif %}
+                            </div>
+
+                            {% if modulos_sem %}
+                              <ul class="list-group list-group-flush">
+                                {% for m in modulos_sem %}
+                                  <li class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-0 me-3" style="flex:1;">
+                                      <div class="fw-semibold">{{ m.nombre }}</div>
+                                      <div class="small text-muted">
+                                        {% if m.docente_nombre %}Docente: {{ m.docente_nombre }}{% else %}Docente: —{% endif %}
+                                        {% if m.temario %}<div class="mt-1 text-truncate" style="max-width:60ch;">Temario: {{ m.temario }}</div>{% endif %}
+                                      </div>
+                                    </div>
+                                    <div class="text-end">
+                                      <span class="badge bg-outline-secondary">{{ m.horas_modulo or 0 }} h</span>
+                                    </div>
+                                  </li>
+                                {% endfor %}
+                              </ul>
+                            {% else %}
+                              <div class="text-muted">No hay módulos registrados en este semestre.</div>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        <!-- Vista general (intensivos u otros) -->
+        {% if curso.modulos and curso.modulos|length > 0 %}
+          <div class="row">
+            {% for m in curso.modulos %}
+              <div class="col-md-6 mb-3">
+                <div class="card h-100 shadow-sm">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <div>
+                        <h6 class="fw-semibold mb-1">{{ m.nombre }}</h6>
+                        <div class="small text-muted">
+                          {% if m.docente_nombre %}Docente: {{ m.docente_nombre }}{% else %}Docente: —{% endif %}
+                        </div>
+                      </div>
+                      <div class="text-end">
+                        <div class="badge bg-success mb-2">{{ m.horas_modulo or 0 }} h</div>
+                        <div class="small text-muted">Año: {{ m.anio_fp or '—' }} · Sem: {{ m.semestre_fp or '—' }}</div>
+                      </div>
+                    </div>
+                    {% if m.temario %}
+                      <div class="small text-muted mt-2" style="white-space:pre-wrap;">{{ m.temario }}</div>
+                    {% else %}
+                      <div class="text-muted small">Sin temario registrado.</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="alert alert-info mb-0">No hay módulos registrados para este curso.</div>
+        {% endif %}
+      {% endif %}
+
+      <hr class="my-4">
+
+      <!-- Acciones -->
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          {% if curso.estado != 'CERRADO' %}
+            <a href="{{ url_for('cursos.editar', curso_id=curso.id) }}" class="btn btn-success">
+              <i class="fas fa-edit me-1"></i> Editar
+            </a>
+          {% endif %}
+          <a href="{{ url_for('cursos.index') }}" class="btn btn-outline-secondary ms-2">Volver a lista</a>
+        </div>
+
+        <div class="d-flex align-items-center">
+          <form method="POST" action="{{ url_for('cursos.programar', curso_id=curso.id) }}" class="me-2 d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            {% if curso.estado == 'VALIDADO' %}
+              <button type="submit" class="btn btn-outline-success"><i class="fas fa-calendar-plus me-1"></i> Programar</button>
+            {% endif %}
+          </form>
+
+          <a href="{{ url_for('validaciones.index') }}" class="btn btn-outline-primary">
+            <i class="fas fa-check-double me-1"></i> Ir a Validaciones
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

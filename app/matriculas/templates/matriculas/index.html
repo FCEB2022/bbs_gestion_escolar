@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Matrículas — BBS{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+
+  <!-- Métricas -->
+  <div class="row g-3 text-center mb-4">
+    <div class="col-6 col-md-3">
+      <div class="p-3 rounded shadow-sm bg-primary text-white">
+        <i class="fas fa-users fa-2x mb-2"></i><h6 class="mb-1">Total matriculados</h6><h4>{{ total or 0 }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="p-3 rounded shadow-sm bg-success text-white">
+        <i class="fas fa-check-circle fa-2x mb-2"></i><h6 class="mb-1">Validadas</h6><h4>{{ total_val or 0 }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="p-3 rounded shadow-sm bg-warning">
+        <i class="fas fa-hourglass-half fa-2x mb-2"></i><h6 class="mb-1">Pendientes</h6><h4>{{ total_pend or 0 }}</h4>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="p-3 rounded shadow-sm bg-danger text-white">
+        <i class="fas fa-times-circle fa-2x mb-2"></i><h6 class="mb-1">Rechazadas</h6><h4>{{ total_rech or 0 }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tarjetas por curso -->
+  {% for c in cursos %}
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+          <h5 class="mb-0 text-success"><i class="fas fa-book-open me-2"></i>{{ c.nombre }}</h5>
+          <span class="badge {% if c.estado=='PROGRAMADO' %}bg-info{% else %}bg-success{% endif %}">
+            {{ c.estado }}
+          </span>
+          {% if c.tipo == 'FP' and c.programacion %}
+            <span class="badge bg-secondary">Años: {{ c.programacion.anio_escolar_inicio }} / {{ c.programacion.anio_escolar_fin }}</span>
+          {% elif c.tipo == 'INTENSIVO' and c.programacion %}
+            <span class="badge bg-secondary">Fechas: {{ c.programacion.fecha_inicio.strftime('%d/%m/%Y') }} - {{ c.programacion.fecha_fin.strftime('%d/%m/%Y') }}</span>
+          {% endif %}
+        </div>
+        <div>
+          <a class="btn btn-sm btn-success" href="{{ url_for('matriculas.nueva', curso_id=c.id) }}">
+            <i class="fas fa-user-plus me-1"></i> Nueva matrícula
+          </a>
+        </div>
+      </div>
+      <div class="card-body">
+
+        <!-- Contadores campus -->
+        {% set mats = mats_por_curso.get(c.id, []) %}
+        {% set bata = mats|selectattr('campus','equalto','BATA')|list|length %}
+        {% set malabo = mats|selectattr('campus','equalto','MALABO')|list|length %}
+        <div class="d-flex gap-3 mb-3">
+          <span class="badge bg-dark">Total: {{ mats|length }}</span>
+          <span class="badge bg-success">BATA: {{ bata }}</span>
+          <span class="badge bg-primary">MALABO: {{ malabo }}</span>
+        </div>
+
+        {% include "matriculas/partials/_tabla_matriculas.html" with context %}
+
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info">No hay cursos validados o programados todavía.</div>
+  {% endfor %}
+
+</div>
+
+<script>
+/* Filtros en tiempo real por curso (un set por tabla) */
+document.querySelectorAll('[data-table-filter]').forEach(function(wrapper){
+  const input = wrapper.querySelector('.filter-q');
+  const campus = wrapper.querySelector('.filter-campus');
+  const estado = wrapper.querySelector('.filter-estado');
+  const rows = wrapper.querySelectorAll('tbody tr');
+
+  function apply(){
+    const q = (input?.value || '').toLowerCase();
+    const cam = campus?.value || '';
+    const est = estado?.value || '';
+    rows.forEach(tr=>{
+      const t = (tr.dataset.text || '').toLowerCase();
+      const rc = tr.dataset.campus || '';
+      const re = tr.dataset.estado || '';
+      let ok = true;
+      if (q && !t.includes(q)) ok = false;
+      if (cam && rc !== cam) ok = false;
+      if (est && re !== est) ok = false;
+      tr.style.display = ok ? '' : 'none';
+    });
+  }
+  [input, campus, estado].forEach(el => el && el.addEventListener('input', apply));
+});
+</script>
+{% endblock %}

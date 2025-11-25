@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Crear desde plantilla{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h4 class="text-success"><i class="fas fa-copy me-2"></i>Crear Curso desde Plantilla</h4>
+  {% if plantillas %}
+    <ul class="list-group mt-3">
+      {% for plantilla in plantillas %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <span>{{ plantilla.nombre }}</span>
+          <a href="{{ url_for('cursos.copiar_desde_plantilla', plantilla_id=plantilla.id) }}"
+             class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-plus"></i> Crear a partir de esta
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted fst-italic mt-3">No hay plantillas disponibles.</p>
+  {% endif %}
+</div>
+{% endblock %}

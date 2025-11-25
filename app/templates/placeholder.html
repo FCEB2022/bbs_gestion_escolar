@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — BBS{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-secondary text-white">
+            <h4 class="mb-0"><i class="fas fa-cogs me-2"></i>{{ title }}</h4>
+        </div>
+        <div class="card-body text-center py-5">
+            <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Módulo en Desarrollo</h5>
+            <p class="text-muted">{{ message }}</p>
+            <a href="{{ url_for('core.dashboard') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

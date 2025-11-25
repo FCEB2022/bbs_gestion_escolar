@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Detalle de Documento{% endblock %}
+{% block content %}
+<div class="container-fluid">
+  <div class="module-header">
+    <h1><i class="fas fa-file-alt me-2"></i>Detalle del Registro</h1>
+    <p class="lead">{{ doc.numero_referencia }} — {{ doc.tipo|capitalize }}</p>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3"><strong>Fecha</strong><br>{{ doc.fecha.strftime('%Y-%m-%d') }}</div>
+        <div class="col-md-3"><strong>Versión</strong><br>v{{ doc.version }}</div>
+        {% if doc.tipo == 'entrada' %}
+          <div class="col-md-6"><strong>Remitente</strong><br>{{ doc.remitente }}</div>
+        {% else %}
+          <div class="col-md-3"><strong>Destinatario</strong><br>{{ doc.destinatario }}</div>
+          <div class="col-md-3"><strong>Remitente interno</strong><br>{{ doc.remitente_interno or '—' }}</div>
+        {% endif %}
+        <div class="col-12"><strong>Descripción</strong><br>{{ doc.descripcion }}</div>
+        {% if doc.observaciones %}<div class="col-12"><strong>Observaciones</strong><br>{{ doc.observaciones }}</div>{% endif %}
+      </div>
+      <hr>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('documentos.descargar', doc_id=doc.id) }}" class="btn btn-success"><i class="fas fa-download me-2"></i>Descargar</a>
+        <a href="{{ url_for('documentos.editar', doc_id=doc.id) }}" class="btn btn-primary"><i class="fas fa-edit me-2"></i>Editar</a>
+        <a href="{{ url_for('documentos.entradas' if doc.tipo=='entrada' else 'documentos.salidas') }}" class="btn btn-secondary">Volver</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

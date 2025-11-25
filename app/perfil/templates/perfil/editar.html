@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Editar Perfil — BANGE Business School{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom">
+      <h5 class="mb-0 text-success"><i class="fas fa-user-edit me-2"></i>Editar Perfil</h5>
+    </div>
+
+    <div class="card-body">
+      <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            {{ form.nombre_completo.label(class="form-label fw-semibold") }}
+            {{ form.nombre_completo(class="form-control", placeholder="Nombre completo") }}
+            {% for error in form.nombre_completo.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-md-6 mb-3">
+            {{ form.email.label(class="form-label fw-semibold") }}
+            {{ form.email(class="form-control", placeholder="Correo electrónico") }}
+            {% for error in form.email.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            {{ form.username.label(class="form-label fw-semibold") }}
+            {{ form.username(class="form-control", placeholder="Nombre de usuario") }}
+            {% for error in form.username.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Rol</label>
+            <input type="text" class="form-control bg-light" readonly
+                   value="{{ current_user.roles | map(attribute='nombre') | join(', ') or 'Sin rol asignado' }}">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <a href="{{ url_for('perfil.ver_perfil') }}" class="btn btn-outline-secondary me-2">Cancelar</a>
+          <button type="submit" class="btn btn-success">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

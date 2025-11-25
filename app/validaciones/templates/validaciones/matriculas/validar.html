@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} — BBS{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-check-double me-2"></i>{{ title }}</h4>
+            <span class="badge bg-dark fs-6">{{ pendientes|length }} pendientes</span>
+        </div>
+
+        <div class="card-body">
+            {% if pendientes %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-warning">
+                        <tr>
+                            <th>#</th>
+                            <th>Estudiante</th>
+                            <th>Curso</th>
+                            <th>Campus</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for matricula in pendientes %}
+                        <tr>
+                            <td>{{ matricula.id }}</td>
+                            <td>
+                                <strong>{{ matricula.estudiante_nombre }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ matricula.doc_identidad or 'Sin documento' }}
+                                    {% if matricula.email %}
+                                    <br>{{ matricula.email }}
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                {{ matricula.curso.nombre }}
+                                {% if matricula.tipo_fp_anho %}
+                                <br>
+                                <span class="badge bg-info">
+                                    {{ '1º Año' if matricula.tipo_fp_anho == 'PRIMER_ANO' else '2º Año' }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ matricula.campus }}</span>
+                            </td>
+                            <td>{{ matricula.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('validaciones.validaciones_matriculas_detalle', matricula_id=matricula.id) }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-search me-1"></i> Revisar
+                                    </a>
+                                    <a href="{{ url_for('matriculas.descargar_documentos', matricula_id=matricula.id) }}" 
+                                       class="btn btn-outline-success">
+                                        <i class="fas fa-download me-1"></i> Docs
+                                    </a>
+                                    <a href="{{ url_for('matriculas.detalle', matricula_id=matricula.id) }}" 
+                                       class="btn btn-outline-info">
+                                        <i class="fas fa-eye me-1"></i> Ver
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                <h5 class="text-success">¡No hay matrículas pendientes de validación!</h5>
+                <p class="text-muted">Todas las matrículas han sido procesadas.</p>
+                <a href="{{ url_for('core.dashboard') }}" class="btn btn-success">
+                    <i class="fas fa-arrow-left me-1"></i> Volver al Dashboard
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

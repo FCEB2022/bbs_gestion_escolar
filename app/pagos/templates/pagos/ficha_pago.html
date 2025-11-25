@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}Ficha de Pagos — BBS{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in">
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+      <h4 class="mb-0"><i class="fas fa-credit-card me-2"></i>Ficha de Pagos - Evolución Financiera</h4>
+      <a href="{{ url_for('matriculas.detalle', matricula_id=m.id) }}" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-arrow-left me-1"></i> Volver a Matrícula
+      </a>
+    </div>
+
+    <div class="card-body">
+      <!-- Información del Estudiante -->
+      <div class="row mb-4">
+        <div class="col-md-6">
+          <h5 class="fw-bold text-success">{{ m.estudiante_nombre }}</h5>
+          <p class="text-muted mb-1">{{ m.curso.nombre }} | {{ m.campus }}</p>
+          <p class="text-muted mb-0">Documento: {{ m.doc_identidad or 'N/A' }}</p>
+        </div>
+        <div class="col-md-6 text-end">
+          <p class="mb-1"><strong>Fecha de Matrícula:</strong> {{ m.created_at.strftime('%d/%m/%Y') }}</p>
+          <p class="mb-0"><strong>Número de Plazos:</strong> {{ m.numero_plazos }}</p>
+        </div>
+      </div>
+
+      <!-- RESUMEN FINANCIERO ACTUALIZADO -->
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Resumen Financiero Actualizado</h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-3 mb-3">
+              <div class="border rounded p-3 bg-light h-100">
+                <h6 class="text-muted">Monto Total Matrícula</h6>
+                <h4 class="text-primary">{{ "%.2f"|format(m.coste_total) }} XAF</h4>
+                <small class="text-muted">Costo total del curso</small>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="border rounded p-3 bg-light h-100">
+                <h6 class="text-muted">Pago Inicial</h6>
+                <h4 class="text-info">{{ "%.2f"|format(m.monto_inicial) }} XAF</h4>
+                <small class="text-muted">{{ "%.1f"|format((m.monto_inicial / m.coste_total * 100)) }}% del total</small>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="border rounded p-3 bg-light h-100">
+                <h6 class="text-muted">Monto Total Pagado</h6>
+                <h4 class="text-success">{{ "%.2f"|format(monto_pagado) }} XAF</h4>
+                <small class="text-muted">{{ "%.1f"|format((monto_pagado / m.coste_total * 100)) }}% del total</small>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="border rounded p-3 bg-light h-100">
+                <h6 class="text-muted">Deuda Actual</h6>
+                <h4 class="text-danger">{{ "%.2f"|format(deuda_actual) }} XAF</h4>
+                <small class="text-muted">{{ "%.1f"|format((deuda_actual / m.coste_total * 100)) }}% del total</small>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Barra de progreso -->
+          <div class="mt-3">
+            <div class="d-flex justify-content-between mb-1">
+              <small>Progreso de Pagos</small>
+              <small>{{ "%.1f"|format((monto_pagado / m.coste_total * 100)) }}%</small>
+            </div>
+            <div class="progress" style="height: 20px;">
+              <div class="progress-bar bg-success" role="progressbar" 
+                   style="width: {{ (monto_pagado / m.coste_total * 100) }}%"
+                   aria-valuenow="{{ (monto_pagado / m.coste_total * 100) }}" 
+                   aria-valuemin="0" 
+                   aria-valuemax="100">
+                {{ "%.1f"|format((monto_pagado / m.coste_total * 100)) }}%
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DETALLE DE PAGOS -->
+      <div class="card">
+        <div class="card-header bg-warning text-dark">
+          <h5 class="mb-0"><i class="fas fa-list me-2"></i>Detalle de Cuotas</h5>
+        </div>
+        <div class="card-body">
+          <!-- Pago Inicial -->
+          {% if pago_inicial %}
+          <div class="alert alert-info mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="fw-bold mb-1"><i class="fas fa-receipt me-2"></i>Pago Inicial</h6>
+                <p class="mb-0"><strong>Monto:</strong> {{ "%.2f"|format(pago_inicial.monto) }} XAF 
+                  | <strong>Estado:</strong> <span class="badge bg-success">Pagado</span></p>
+              </div>
+              <div class="text-end">
+                <small class="text-muted">Realizado al matricularse</small>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Tabla de Cuotas -->
+          <div class="table-responsive">
+            <table class="table table-striped align-middle">
+              <thead class="table-warning">
+                <tr>
+                  <th># Cuota</th>
+                  <th>Monto (XAF)</th>
+                  <th>Vencimiento</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pago in pagos %}
+                  {% if not pago.es_pago_inicial %}
+                  <tr>
+                    <td>
+                      <strong>Cuota {{ pago.numero_cuota }}</strong>
+                      {% if pago.fecha_pago %}
+                        <br><small class="text-muted">Pagado: {{ pago.fecha_pago.strftime('%d/%m/%Y') }}</small>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {{ "%.2f"|format(pago.monto) }} XAF
+                      {% if pago.estado == 'PENDIENTE' %}
+                        <br><small class="text-muted">Monto actualizado</small>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if pago.fecha_vencimiento %}
+                        {{ pago.fecha_vencimiento.strftime('%d/%m/%Y') }}
+                        {% if pago.esta_vencido() and pago.estado == 'PENDIENTE' %}
+                          <br><span class="badge bg-danger">Vencido</span>
+                        {% endif %}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% set estado_display = pago.get_estado_display() %}
+                      {% if estado_display == 'Validado' %}
+                        <span class="badge bg-success">Validado</span>
+                        <br><small class="text-muted">{{ pago.fecha_pago.strftime('%d/%m/%Y') if pago.fecha_pago }}</small>
+                      {% elif estado_display == 'Rechazado' %}
+                        <span class="badge bg-danger">Rechazado</span>
+                        {% if pago.motivo_rechazo %}
+                          <br><small class="text-muted">{{ pago.motivo_rechazo }}</small>
+                        {% endif %}
+                      {% elif estado_display == 'Fuera de Plazo' %}
+                        <span class="badge bg-warning text-dark">Fuera de Plazo</span>
+                      {% elif estado_display == 'Pendiente de Validación' %}
+                        <span class="badge bg-secondary">Pendiente Validación</span>
+                        <br><small class="text-muted">Esperando confirmación</small>
+                      {% else %}
+                        <span class="badge bg-info">Pendiente</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <div class="btn-group btn-group-sm">
+                        {% if estado_display in ['Pendiente', 'Fuera de Plazo', 'Rechazado'] %}
+                          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalRegistroPago{{ pago.id }}">
+                            <i class="fas fa-edit"></i> {{ 'Registrar' if estado_display != 'Rechazado' else 'Editar' }}
+                          </button>
+                        {% endif %}
+                        <a href="{{ url_for('pagos.detalles_pago', pago_id=pago.id) }}" class="btn btn-outline-secondary">
+                          <i class="fas fa-eye"></i> Ver
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endif %}
+                {% else %}
+                  <tr>
+                    <td colspan="5" class="text-center text-muted">No hay cuotas registradas</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          {% if cuotas_pendientes|length > 0 %}
+          <div class="alert alert-warning mt-3">
+            <h6 class="fw-bold"><i class="fas fa-info-circle me-2"></i>Información Importante</h6>
+            <p class="mb-1">Los montos de las cuotas pendientes se actualizan automáticamente cada vez que se valida un pago.</p>
+            <p class="mb-0"><strong>Próxima actualización:</strong> La deuda actual de <strong>{{ "%.2f"|format(deuda_actual) }} XAF</strong> 
+              se distribuirá entre las <strong>{{ cuotas_pendientes|length }}</strong> cuotas pendientes.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# --- MÓDALS: los dejamos fuera de la tabla/filas para evitar parpadeos y problemas de foco --- #}
+  {% for pago in pagos %}
+  <div class="modal fade" id="modalRegistroPago{{ pago.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-credit-card me-2"></i>
+            {{ 'Registrar' if pago.estado != 'RECHAZADO' else 'Editar' }} Pago - Cuota {{ pago.numero_cuota }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <form method="POST" action="{{ url_for('pagos.registrar_pago', pago_id=pago.id) if pago.estado != 'RECHAZADO' else url_for('pagos.editar_pago', pago_id=pago.id) }}" enctype="multipart/form-data">
+          {# CSRF token obligatorio para CSRFProtect #}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="modal-body">
+            <div class="alert alert-info">
+              <h6 class="fw-bold">Información Actual del Pago</h6>
+              <p class="mb-1"><strong>Monto de la cuota:</strong> {{ "%.2f"|format(pago.monto) }} XAF</p>
+              <p class="mb-1"><strong>Deuda actual:</strong> {{ "%.2f"|format(deuda_actual) }} XAF</p>
+              <p class="mb-0"><strong>Cuotas pendientes:</strong> {{ cuotas_pendientes|length }}</p>
+            </div>
+            
+            <p><strong>Estudiante:</strong> {{ m.estudiante_nombre }}</p>
+            <p><strong>Cuota:</strong> {{ pago.numero_cuota }} - {{ "%.2f"|format(pago.monto) }} XAF</p>
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold">Comprobante de Pago</label>
+              <input type="file" class="form-control" name="comprobante" accept=".pdf,.jpg,.jpeg,.png" required>
+              <div class="form-text">Formatos permitidos: PDF, JPG, PNG (máx. 10MB)</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">
+              {{ 'Registrar' if pago.estado != 'RECHAZADO' else 'Actualizar' }} Pago
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Gestión de Usuarios — BANGE Business School{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <h3 class="fw-bold text-success mb-4">
+    <i class="fa-solid fa-users me-2"></i> Gestión de Usuarios
+  </h3>
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <form class="d-flex" method="get" action="{{ url_for('usuarios.index') }}">
+      <input type="text" name="q" class="form-control form-control-sm me-2" placeholder="Buscar usuario...">
+      <button type="submit" class="btn btn-outline-success btn-sm">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+    </form>
+    <a href="{{ url_for('usuarios.nuevo') }}" class="btn btn-success btn-sm">
+      <i class="fa-solid fa-plus me-1"></i> Nuevo usuario
+    </a>
+  </div>
+
+  <div class="table-responsive shadow-sm">
+    <table class="table table-hover align-middle">
+      <thead class="table-success text-center">
+        <tr>
+          <th>ID</th>
+          <th>Usuario</th>
+          <th>Nombre completo</th>
+          <th>Correo</th>
+          <th>Roles</th>
+          <th>Estado</th>
+          <th>Último acceso</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr class="text-center">
+          <td>{{ u.id }}</td>
+          <td class="fw-semibold">{{ u.username }}</td>
+          <td>{{ u.full_name }}</td>
+          <td>{{ u.email or "—" }}</td>
+          <td>{{ u.roles | map(attribute='nombre') | join(', ') }}</td>
+          <td>
+            {% if u.activo %}
+              <span class="badge bg-success">Activo</span>
+            {% else %}
+              <span class="badge bg-danger">Bloqueado</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.ultimo_login %}
+              {{ u.ultimo_login.strftime('%d/%m/%Y %H:%M') }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <a href="{{ url_for('usuarios.editar', id=u.id) }}" class="btn btn-outline-success" title="Editar">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </a>
+              {% if u.activo %}
+                <a href="{{ url_for('usuarios.bloquear', id=u.id) }}" class="btn btn-outline-danger" title="Bloquear">
+                  <i class="fa-solid fa-user-slash"></i>
+                </a>
+              {% else %}
+                <a href="{{ url_for('usuarios.bloquear', id=u.id) }}" class="btn btn-outline-success" title="Activar">
+                  <i class="fa-solid fa-user-check"></i>
+                </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" class="text-center text-muted py-4">
+            <i class="fa-solid fa-circle-info me-2"></i> No hay usuarios registrados.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

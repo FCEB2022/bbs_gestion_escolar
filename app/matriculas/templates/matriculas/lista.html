@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Matrículas — BBS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Matrículas</h5>
+      <a href="{{ url_for('matriculas.index') }}" class="btn btn-outline-secondary btn-sm">Ver por curso</a>
+    </div>
+    <div class="card-body">
+      {% if matriculas %}
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Estudiante</th>
+                <th>Curso</th>
+                <th>Fecha</th>
+                <th>Documentos</th>
+                <th>Pagos</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for m in matriculas %}
+                <tr>
+                  <td>{{ m.id }}</td>
+                  <td>{{ m.estudiante_nombre }}</td>
+                  <td>{{ m.curso.nombre if m.curso else '—' }}</td>
+                  <td>{{ m.created_at.strftime('%d/%m/%Y') if m.created_at else '—' }}</td>
+
+                  {# Documentos: usar list() para evitar AppenderQuery issues #}
+                  <td>
+                    {% set docs = (m.documentos|list) if m.documentos is defined else [] %}
+                    {{ docs|length }}
+                  </td>
+
+                  {# Pagos: contar de forma defensiva #}
+                  <td>
+                    {% set pagos = (m.pagos|list) if m.pagos is defined else [] %}
+                    {{ pagos|length }}
+                  </td>
+
+                  <td>{{ m.estado or '—' }}</td>
+                  <td>
+                    <a href="{{ url_for('matriculas.detalle', matricula_id=m.id) }}" class="btn btn-sm btn-outline-primary">Ver</a>
+                    {% if (current_user and (current_user|attr('roles')|length) and (current_user.roles|map(attribute='nombre')|list)|length) %}
+                      {% if current_user|attr('roles') and ('Administrador' in (current_user.roles|map(attribute='nombre')|list) or 'Administrativo' in (current_user.roles|map(attribute='nombre')|list)) %}
+                        <a href="{{ url_for('matriculas.editar', matricula_id=m.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+                      {% endif %}
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="alert alert-info">No hay matrículas registradas.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

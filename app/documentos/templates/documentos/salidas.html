@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Registro de Salidas — BBS{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-success"><i class="fas fa-file-export me-2"></i>Registros de Salida</h2>
+    <a href="{{ url_for('documentos.nuevo', tipo='salida') }}" class="btn btn-success">
+      <i class="fas fa-plus me-1"></i> Nuevo Registro
+    </a>
+  </div>
+
+  <input type="text" id="searchInput" class="form-control mb-3" placeholder="Buscar por referencia, destinatario o asunto...">
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped align-middle" id="tablaDocs">
+          <thead class="table-success">
+            <tr>
+              <th>#</th>
+              <th>Referencia</th>
+              <th>Destinatario</th>
+              <th>Fecha</th>
+              <th>Descripción</th>
+              <th>Archivo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in docs %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ d.numero_referencia }}</td>
+              <td>{{ d.destinatario or '—' }}</td>
+              <td>{{ d.fecha.strftime('%d/%m/%Y') }}</td>
+              <td>{{ d.descripcion }}</td>
+              <td>
+                {% if d.filename %}
+                  <a href="{{ url_for('documentos.ver_archivo', doc_id=d.id) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-file-pdf"></i>
+                  </a>
+                {% else %} — {% endif %}
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a href="{{ url_for('documentos.detalle', doc_id=d.id) }}" class="btn btn-outline-secondary"><i class="fas fa-eye"></i></a>
+                  <a href="{{ url_for('documentos.editar', doc_id=d.id) }}" class="btn btn-outline-success"><i class="fas fa-edit"></i></a>
+
+                  {# ✅ Corrección: comprobación de rol compatible con Jinja #}
+                  {% set es_admin = false %}
+                  {% for rol in current_user.roles %}
+                    {% if rol.nombre == 'Administrador' %}
+                      {% set es_admin = true %}
+                    {% endif %}
+                  {% endfor %}
+
+                  {% if es_admin %}
+                    <form method="POST" action="{{ url_for('documentos.eliminar', doc_id=d.id) }}" class="d-inline" onsubmit="return confirm('¿Eliminar registro?');">
+                      <button class="btn btn-outline-danger"><i class="fas fa-trash"></i></button>
+                    </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-center text-muted">No hay registros de salida</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function() {
+  const filter = this.value.toLowerCase();
+  document.querySelectorAll('#tablaDocs tbody tr').forEach(row => {
+    row.style.display = row.innerText.toLowerCase().includes(filter) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}

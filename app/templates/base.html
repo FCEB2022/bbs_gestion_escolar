@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>{% block title %}BANGE Business School — Gestión Escolar{% endblock %}</title>
+
+      <!-- Bootstrap 5 -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+      <!-- Google Fonts: Outfit & Inter -->
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600;700;800&display=swap"
+            rel="stylesheet">
+
+      <!-- Font Awesome -->
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
+
+      <!-- Estilos propios -->
+      <link href="{{ url_for('static', filename='css/main.css') }}?v=dark2" rel="stylesheet">
+      <meta name="csrf-token" content="{{ csrf_token() }}">
+</head>
+
+<body>
+
+      <!-- NAVBAR SUPERIOR GLOBAL -->
+      <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+            <div class="container-fluid">
+                  <!-- Logo institucional -->
+                  <a class="navbar-brand" href="{{ url_for('core.dashboard') }}">
+                        <img src="{{ url_for('static', filename='img/logo-bbs.jpg') }}" alt="Logo Institucional"
+                              height="40" class="me-2">
+                        <span>BANGE <span class="fw-light">BUSINESS SCHOOL</span></span>
+                  </a>
+
+                  <!-- Botón colapsable móvil -->
+                  <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                        <i class="fas fa-bars"></i>
+                  </button>
+
+                  <!-- Menú principal -->
+                  <div class="collapse navbar-collapse" id="mainNav">
+                        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+
+                              <!-- Botón Selector de Tema -->
+                              <li class="nav-item me-2">
+                                    <button class="btn btn-link nav-link" id="themeToggle" onclick="toggleTheme()">
+                                          <i class="fas fa-moon" id="themeIcon"></i>
+                                    </button>
+                              </li>
+
+                              {% if current_user.is_authenticated %}
+                              {% set roles = current_user.roles | map(attribute='nombre') | list %}
+
+                              <!-- Panel principal -->
+                              <li class="nav-item"><a class="nav-link" href="{{ url_for('core.dashboard') }}"><i
+                                                class="fas fa-home me-1"></i> Inicio</a></li>
+
+                              <!-- Gestión de Usuarios (solo Administradores) -->
+                              {% if 'Administrador' in roles %}
+                              <li class="nav-item"><a class="nav-link" href="{{ url_for('usuarios.index') }}"><i
+                                                class="fas fa-users-cog me-1"></i> Usuarios</a></li>
+                              {% endif %}
+
+                              <!-- Documentos -->
+                              <li class="nav-item"><a class="nav-link" href="{{ url_for('documentos.index') }}"><i
+                                                class="fas fa-file-alt me-1"></i> Documentos</a></li>
+
+                              <!-- Cursos -->
+                              <li class="nav-item"><a class="nav-link" href="{{ url_for('cursos.index') }}"><i
+                                                class="fas fa-book-open me-1"></i> Cursos</a></li>
+
+                              <!-- Matrículas -->
+                              <li class="nav-item"><a class="nav-link" href="{{ url_for('matriculas.index') }}"><i
+                                                class="fas fa-user-graduate me-1"></i> Matrículas</a></li>
+
+                              <!-- Pagos -->
+                              <li class="nav-item"><a class="nav-link" href="{{ url_for('pagos.index') }}"><i
+                                                class="fas fa-credit-card me-1"></i> Pagos</a></li>
+
+                              <!-- Actas y Expedientes -->
+                              <li class="nav-item"><a class="nav-link"
+                                          href="{{ url_for('actas_expedientes.index') }}"><i
+                                                class="fas fa-file-contract me-1"></i> Actas</a></li>
+
+                              <!-- Validaciones -->
+                              <li class="nav-item"><a class="nav-link"
+                                          href="{{ url_for('matriculas.validaciones_index') }}"><i
+                                                class="fas fa-check-double me-1"></i> Validaciones</a></li>
+
+                              <!-- Proyectos -->
+                              <li class="nav-item"><a class="nav-link" href="{{ url_for('proyectos.index') }}"><i
+                                                class="fas fa-project-diagram me-1"></i> Proyectos</a></li>
+
+                              <!-- Estadísticas -->
+                              <li class="nav-item"><a class="nav-link" href="{{ url_for('estadisticas.index') }}"><i
+                                                class="fas fa-chart-line me-1"></i> Estadísticas</a></li>
+
+                              <!-- Perfil -->
+                              <li class="nav-item dropdown ms-lg-3">
+                                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 glass-panel px-3 py-2"
+                                          href="#" id="perfilDropdown" role="button" data-bs-toggle="dropdown">
+                                          <i class="fas fa-user-circle fa-lg"></i>
+                                          <span>{{ current_user.nombre_completo or current_user.username }}</span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end glass-panel border-0 mt-2">
+                                          <li><a class="dropdown-item" href="{{ url_for('perfil.ver_perfil') }}"><i
+                                                            class="fas fa-id-card me-2 text-primary"></i> Ver perfil</a>
+                                          </li>
+                                          <li>
+                                                <hr class="dropdown-divider bg-secondary opacity-25">
+                                          </li>
+                                          <li><a class="dropdown-item text-danger"
+                                                      href="{{ url_for('usuarios.logout') }}"><i
+                                                            class="fa-solid fa-right-from-bracket me-2"></i> Cerrar
+                                                      sesión</a></li>
+                                    </ul>
+                              </li>
+
+                              {% else %}
+                              <li class="nav-item">
+                                    <a class="btn btn-primary-glow" href="{{ url_for('usuarios.login') }}">
+                                          <i class="fa-solid fa-right-to-bracket me-1"></i> Entrar
+                                    </a>
+                              </li>
+                              {% endif %}
+                        </ul>
+                  </div>
+            </div>
+      </nav>
+
+      <!-- CONTENIDO -->
+      <main class="py-5">
+            <div class="container-fluid px-4">
+                  {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                  <div class="position-fixed top-0 end-0 p-3" style="z-index:1080; margin-top: 80px;">
+                        {% for category, message in messages %}
+                        <div
+                              class="alert alert-{{ 'danger' if category=='error' else category }} alert-dismissible fade show shadow-lg mb-3">
+                              <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <div>{{ message }}</div>
+                              </div>
+                              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endfor %}
+                  </div>
+                  {% endif %}
+                  {% endwith %}
+
+                  {% block content %}{% endblock %}
+            </div>
+      </main>
+
+      <!-- JS -->
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+      <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+      <script>
+            // Lógica de Selector de Tema
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+
+            function applyTheme(theme) {
+                  html.setAttribute('data-theme', theme);
+                  localStorage.setItem('theme', theme);
+
+                  if (theme === 'light') {
+                        themeIcon.classList.remove('fa-moon');
+                        themeIcon.classList.add('fa-sun');
+                        themeIcon.style.color = 'var(--primary)';
+                  } else {
+                        themeIcon.classList.remove('fa-sun');
+                        themeIcon.classList.add('fa-moon');
+                        themeIcon.style.color = '';
+                  }
+            }
+
+            function toggleTheme() {
+                  const currentTheme = html.getAttribute('data-theme');
+                  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                  applyTheme(newTheme);
+            }
+
+            // Aplicar tema al cargar
+            applyTheme(savedTheme);
+      </script>
+</body>
+
+</html>

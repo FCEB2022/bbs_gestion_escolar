@@ -1,0 +1,69 @@
+# Entorno Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Entorno IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Base de datos
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads y archivos temporales
+uploads/
+instance/uploads/
+instance/backups/
+
+# Archivos de entorno
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Caché
+.cache/
+.pytest_cache/
+htmlcov/
+
+# Migraciones (opcional - descomenta si quieres versionar)
+# migrations/versions/
+
+# Archivos temporales del sistema
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
